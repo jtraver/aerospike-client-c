@@ -34,29 +34,45 @@ extern "C" {
  *****************************************************************************/
 
 /**
- * Macro for setting setting the STRING_EQUAL predicate.
+ * Filter on string bins.
  *
  * ~~~~~~~~~~{.c}
  * as_query_where(query, "bin1", as_string_equals("abc"));
  * ~~~~~~~~~~
  *
  * @relates as_query
+ * @ingroup query_object
  */
 #define as_string_equals(__val) AS_PREDICATE_EQUAL, AS_INDEX_TYPE_DEFAULT, AS_INDEX_STRING, __val
 
 /**
- * Macro for setting setting the INTEGER_EQUAL predicate.
+ * Filter on blob bins.
+ * Requires server version 7.0+.
+ *
+ * ~~~~~~~~~~{.c}
+ * // as_blob_equals(uint8_t* bytes, uint32_t size, bool free)
+ * as_query_where(query, "bin1", as_blob_equals(bytes, size, true));
+ * ~~~~~~~~~~
+ *
+ * @relates as_query
+ * @ingroup query_object
+ */
+#define as_blob_equals(__val, __size, __free) AS_PREDICATE_EQUAL, AS_INDEX_TYPE_DEFAULT, AS_INDEX_BLOB, __val, __size, __free
+
+/**
+ * Filter on integer bins.
  *
  * ~~~~~~~~~~{.c}
  * as_query_where(query, "bin1", as_integer_equals(123));
  * ~~~~~~~~~~
  *
  * @relates as_query
+ * @ingroup query_object
  */
 #define as_integer_equals(__val) AS_PREDICATE_EQUAL, AS_INDEX_TYPE_DEFAULT, AS_INDEX_NUMERIC, (int64_t)__val
 
 /**
- * Macro for setting setting the INTEGER_RANGE predicate.
+ * Ranger filter on integer bins.
  *
  * ~~~~~~~~~~{.c}
  * as_query_where(query, "bin1", as_integer_range(1,100));
@@ -68,7 +84,7 @@ extern "C" {
 #define as_integer_range(__min, __max) AS_PREDICATE_RANGE, AS_INDEX_TYPE_DEFAULT, AS_INDEX_NUMERIC, (int64_t)__min, (int64_t)__max
 
 /**
- * Macro for setting setting the RANGE predicate.
+ * Range filter on list/map elements.
  *
  * ~~~~~~~~~~{.c}
  * as_query_where(query, "bin1", as_range(LIST,NUMERIC,1,100));
@@ -80,7 +96,7 @@ extern "C" {
 #define as_range(indextype, datatype, __min, __max) AS_PREDICATE_RANGE, AS_INDEX_TYPE_ ##indextype, AS_INDEX_ ##datatype, __min, __max
 
 /**
- * Macro for setting setting the CONTAINS predicate.
+ * Contains filter on list/map elements.
  *
  * ~~~~~~~~~~{.c}
  * as_query_where(query, "bin1", as_contains(LIST,STRING,"val"));
@@ -92,7 +108,21 @@ extern "C" {
 #define as_contains(indextype, datatype, __val) AS_PREDICATE_EQUAL, AS_INDEX_TYPE_ ##indextype, AS_INDEX_ ##datatype, __val
 
 /**
- * Macro for setting setting the EQUALS predicate.
+ * Contains blob filter on list/map elements.
+ * Requires server version 7.0+.
+ *
+ * ~~~~~~~~~~{.c}
+ * // as_blob_contains(type, uint8_t* bytes, uint32_t size, bool free)
+ * as_query_where(query, "bin1", as_blob_equals(LIST, bytes, size, true));
+ * ~~~~~~~~~~
+ *
+ * @relates as_query
+ * @ingroup query_object
+ */
+#define as_blob_contains(indextype, __val, __size, __free) AS_PREDICATE_EQUAL, AS_INDEX_TYPE_ ##indextype, AS_INDEX_BLOB, __val, __size, __free
+
+/**
+ * Filter specified type on bins.
  *
  * ~~~~~~~~~~{.c}
  * as_query_where(query, "bin1", as_equals(NUMERIC,5));
@@ -103,8 +133,28 @@ extern "C" {
  */
 #define as_equals(datatype, __val) AS_PREDICATE_EQUAL, AS_INDEX_TYPE_DEFAULT, AS_INDEX_ ##datatype, __val
 
+/**
+ * Within filter on GEO bins.
+ *
+ * ~~~~~~~~~~{.c}
+ * as_query_where(query, "bin1", as_geo_within(region));
+ * ~~~~~~~~~~
+ * 
+ * @relates as_query
+ * @ingroup query_object
+ */
 #define as_geo_within(__val) AS_PREDICATE_RANGE, AS_INDEX_TYPE_DEFAULT, AS_INDEX_GEO2DSPHERE, __val
 
+/**
+ * Contains filter on GEO bins.
+ *
+ * ~~~~~~~~~~{.c}
+ * as_query_where(query, "bin1", as_geo_contains(region));
+ * ~~~~~~~~~~
+ * 
+ * @relates as_query
+ * @ingroup query_object
+ */
 #define as_geo_contains(__val) AS_PREDICATE_RANGE, AS_INDEX_TYPE_DEFAULT, AS_INDEX_GEO2DSPHERE, __val
 
 
@@ -124,6 +174,12 @@ typedef union as_predicate_value_u {
 		char* string;
 		bool _free;
 	} string_val;
+
+	struct {
+		uint8_t* bytes;
+		uint32_t bytes_size;
+		bool _free;
+	} blob_val;
 
 	struct {
 		int64_t min;
@@ -488,18 +544,16 @@ typedef struct as_query_s {
 	uint32_t records_per_second;
 
 	/**
-	 * The time-to-live (expiration) of the record in seconds.
-	 * There are also special values that can be set in the record TTL:
-	 * (*) ZERO (defined as AS_RECORD_DEFAULT_TTL), which means that the
-	 *    record will adopt the default TTL value from the namespace.
-	 * (*) 0xFFFFFFFF (also, -1 in a signed 32 bit int)
-	 *    (defined as AS_RECORD_NO_EXPIRE_TTL), which means that the record
-	 *    will get an internal "void_time" of zero, and thus will never expire.
-	 * (*) 0xFFFFFFFE (also, -2 in a signed 32 bit int)
-	 *    (defined as AS_RECORD_NO_CHANGE_TTL), which means that the record
-	 *    ttl will not change when the record is updated.
+	 * The time-to-live (expiration) of the record in seconds. Note that ttl
+	 * is only used on background query writes.
 	 *
-	 * Note that the TTL value will be employed ONLY on background query writes.
+	 * There are also special values that can be set in the record ttl:
+	 * <ul>
+	 * <li>AS_RECORD_DEFAULT_TTL: Use the server default ttl from the namespace.</li>
+	 * <li>AS_RECORD_NO_EXPIRE_TTL: Do not expire the record.</li>
+	 * <li>AS_RECORD_NO_CHANGE_TTL: Keep the existing record ttl when the record is updated.</li>
+	 * <li>AS_RECORD_CLIENT_DEFAULT_TTL: Use the default client ttl in as_policy_write.</li>
+	 * </ul>
 	 */
 	uint32_t ttl;
 
