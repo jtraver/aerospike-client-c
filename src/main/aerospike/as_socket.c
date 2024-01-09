@@ -35,6 +35,7 @@
 static inline bool
 as_socket_is_error(int e)
 {
+    as_log_debug("\n\nJATCCLIENT %s %s %d", __FILE__, __func__, __LINE__);
 	return !(e == ETIMEDOUT || e == EWOULDBLOCK || e == EINPROGRESS || e == EAGAIN);
 }
 
@@ -303,6 +304,21 @@ as_socket_write_deadline(
 	uint32_t socket_timeout, uint64_t deadline
 	)
 {
+    static int wthreadcount = 0;
+    int lwthreadcount = 0;
+    lwthreadcount = ++wthreadcount;
+    as_log_debug("\n\nJATCCLIENT %d %s %s %d", lwthreadcount, __FILE__, __func__, __LINE__);
+    if (1)
+    {
+        size_t loopc = 0;
+        uint8_t *bufp = buf;
+        as_log_debug("\n\nJATCCLIENT %d %s %s %d", lwthreadcount, __FILE__, __func__, __LINE__);
+        for (loopc = 0; loopc < buf_len; loopc++)
+        {
+            as_log_debug("JATCCLIENT %s %d %d BYTE = 0x%x %d '%c'", __func__, lwthreadcount, loopc, *bufp, *bufp, *bufp);
+            bufp++;
+        }
+    }
 	if (sock->ctx) {
 		as_status status = AEROSPIKE_OK;
 		int rv = as_tls_write(sock, buf, buf_len, socket_timeout, deadline);
@@ -406,6 +422,10 @@ as_socket_read_deadline(
 	uint32_t socket_timeout, uint64_t deadline
 	)
 {
+    static int rthreadcount = 0;
+    int lrthreadcount = 0;
+    lrthreadcount = ++rthreadcount;
+    as_log_debug("\n\nJATCCLIENT %s %s %d lrthreadcount = %d", __FILE__, __func__, __LINE__, lrthreadcount);
 	if (sock->ctx) {
 		as_status status = AEROSPIKE_OK;
 		int rv = as_tls_read(sock, buf, buf_len, socket_timeout, deadline);
@@ -496,6 +516,18 @@ as_socket_read_deadline(
 		try++;
 	
 	} while (pos < buf_len);
+
+    if (1)
+    {
+        size_t loopc = 0;
+        uint8_t *bufp = buf;
+        as_log_debug("\n\nJATCCLIENT READ %d %s %s %d", lrthreadcount, __FILE__, __func__, __LINE__);
+        for (loopc = 0; loopc < buf_len; loopc++)
+        {
+            as_log_debug("JATCCLIENT READ %s %d %d BYTE = 0x%x %d '%c'", __func__, lrthreadcount, loopc, *bufp, *bufp, *bufp);
+            bufp++;
+        }
+    }
 
 	as_poll_destroy(&poll);
 	return status;
