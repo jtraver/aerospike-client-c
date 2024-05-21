@@ -70,6 +70,64 @@ static uint64_t g_epochns;
 bool namespace_has_persistence = false;
 bool namespace_in_memory = false;
 
+
+
+void
+blog_detailv(as_log_level level, const char* fmt, va_list ap)
+{
+    // Write message all at once so messages generated from multiple threads have less of a chance
+    // of getting garbled.
+    char fmtbuf[1024];
+    time_t now = time(NULL);
+    struct tm* t = localtime(&now);
+    int len = sprintf(fmtbuf, "%d-%02d-%02d %02d:%02d:%02d %s ",
+        t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, as_log_level_tostring(level));
+    char* p = stpcpy(fmtbuf + len, fmt);
+    *p++ = '\n';
+    *p = 0;
+    vprintf(fmtbuf, ap);
+}
+
+
+
+
+static bool
+as_client_log_callback(as_log_level level, const char * func, const char * file, uint32_t line, const char * fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    blog_detailv(level, fmt, ap);
+    va_end(ap);
+    return true;
+}
+
+
+static bool
+as_client_log_callback_noop(as_log_level level, const char * func, const char * file, uint32_t line, const char * fmt, ...)
+{
+    return true;
+}
+
+
+
+void
+do_debug()
+{
+    printf("C_CLIENT STDOUT \n\nSTART do_debug\n");
+    as_log_set_level(AS_LOG_LEVEL_DEBUG);
+    as_log_set_callback(as_client_log_callback);
+}
+
+
+void
+dont_debug()
+{
+    printf("C_CLIENT STDOUT \nSTART dont_debug\n\n");
+    as_log_set_level(AS_LOG_LEVEL_DEBUG);
+    as_log_set_callback(as_client_log_callback_noop);
+}
+
+
 /******************************************************************************
  * STATIC FUNCTIONS
  *****************************************************************************/
@@ -1709,7 +1767,9 @@ TEST(query_list_ctx_is_string, "IN LIST count(*) where x[0] is 'x'")
 	as_query_where_inita(&q, 1);
 	as_query_where_with_ctx(&q, "x", &ctx, as_string_equals("x"));
 
+    do_debug();
 	aerospike_query_foreach(as, &err, NULL, &q, query_foreach_count_callback, &count);
+    dont_debug();
 
 	if (err.code != AEROSPIKE_OK) {
 		fprintf(stderr, "error(%d) %s at [%s:%d]", err.code, err.message, err.file, err.line);
