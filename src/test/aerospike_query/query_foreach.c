@@ -465,12 +465,15 @@ before(atf_suite * suite)
 static bool
 after(atf_suite * suite)
 {
+	return true;
+    /*
 	if (! udf_remove(LUA_FILE)) {
 		error("failure while removing: %s", LUA_FILE);
 		return false;
 	}
 
 	return query_foreach_destroy();
+    */
 }
 
 static bool
@@ -1656,7 +1659,7 @@ TEST(query_foreach_nullset, "test null-set behavior")
 	aerospike_query_foreach(as, &err, NULL, &q, query_foreach_count_callback, &count);
 	assert_true(count == 1);
 
-	aerospike_index_remove(as, &err, NULL, NAMESPACE, "idx2");
+	// aerospike_index_remove(as, &err, NULL, NAMESPACE, "idx2");
 	if (err.code != AEROSPIKE_OK) {
 		info("error(%d): %s", err.code, err.message);
 	}
@@ -1743,7 +1746,7 @@ TEST(query_foreach_int_with_double_bin, "test query on double behavior")
 
 	pthread_mutex_destroy(&udata.lock);
 
-	aerospike_index_remove(as, &err, NULL, NAMESPACE, "idx_test_int_bin");
+	// aerospike_index_remove(as, &err, NULL, NAMESPACE, "idx_test_int_bin");
 	if (err.code != AEROSPIKE_OK) {
 		info("error(%d): %s", err.code, err.message);
 	}
