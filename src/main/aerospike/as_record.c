@@ -60,6 +60,7 @@ static as_bin* as_record_bin_forupdate(as_record* rec, const char* name);
 static as_record*
 as_record_defaults(as_record* rec, bool free, uint16_t nbins)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_rec * r = &rec->_;
 	as_val_init(&r->_, AS_REC, free);
 	r->data = rec;
@@ -100,6 +101,7 @@ as_record_defaults(as_record* rec, bool free, uint16_t nbins)
 static as_bin*
 as_record_bin_forupdate(as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( ! (rec && name && strlen(name) < AS_BIN_NAME_MAX_SIZE) ) {
 		return NULL;
 	}
@@ -129,6 +131,7 @@ as_record_bin_forupdate(as_record* rec, const char* name)
 void
 as_record_release(as_record* rec)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( rec ) {
 
 		if ( rec->bins.entries ) {
@@ -157,6 +160,7 @@ as_record_release(as_record* rec)
 as_record*
 as_record_new(uint16_t nbins)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_record* rec = (as_record *) cf_malloc(sizeof(as_record));
 	if ( !rec ) return rec;
 	return as_record_defaults(rec, true, nbins);
@@ -165,6 +169,7 @@ as_record_new(uint16_t nbins)
 as_record*
 as_record_init(as_record* rec, uint16_t nbins)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !rec ) return rec;
 	return as_record_defaults(rec, false, nbins);
 }
@@ -172,6 +177,7 @@ as_record_init(as_record* rec, uint16_t nbins)
 void
 as_record_destroy(as_record* rec)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_rec_destroy((as_rec *) rec);
 }
 
@@ -182,6 +188,7 @@ as_record_destroy(as_record* rec)
 uint16_t
 as_record_numbins(const as_record* rec)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return rec ? rec->bins.size : 0;
 }
 
@@ -201,6 +208,7 @@ as_record_set(as_record* rec, const char* name, as_bin_value* value)
 bool
 as_record_set_bool(as_record* rec, const char* name, bool value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init_bool(bin, name, value);
@@ -210,6 +218,7 @@ as_record_set_bool(as_record* rec, const char* name, bool value)
 bool
 as_record_set_int64(as_record* rec, const char* name, int64_t value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init_int64(bin, name, value);
@@ -219,6 +228,7 @@ as_record_set_int64(as_record* rec, const char* name, int64_t value)
 bool
 as_record_set_double(as_record* rec, const char* name, double value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init_double(bin, name, value);
@@ -228,6 +238,7 @@ as_record_set_double(as_record* rec, const char* name, double value)
 bool
 as_record_set_strp(as_record* rec, const char* name, const char* value, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init_str(bin, name, value, free);
@@ -237,6 +248,7 @@ as_record_set_strp(as_record* rec, const char* name, const char* value, bool fre
 bool
 as_record_set_geojson_strp(as_record* rec, const char* name, const char* value, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init_geojson(bin, name, value, free);
@@ -246,6 +258,7 @@ as_record_set_geojson_strp(as_record* rec, const char* name, const char* value, 
 bool
 as_record_set_rawp(as_record* rec, const char* name, const uint8_t* value, uint32_t size, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init_raw(bin, name, value, size, free);
@@ -255,6 +268,7 @@ as_record_set_rawp(as_record* rec, const char* name, const uint8_t* value, uint3
 bool
 as_record_set_raw_typep(as_record* rec, const char* name, const uint8_t* value, uint32_t size, as_bytes_type type, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init_raw(bin, name, value, size, free);
@@ -266,6 +280,7 @@ as_record_set_raw_typep(as_record* rec, const char* name, const uint8_t* value, 
 bool
 as_record_set_integer(as_record* rec, const char* name, as_integer * value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init(bin, name, (as_bin_value *) value);
@@ -275,6 +290,7 @@ as_record_set_integer(as_record* rec, const char* name, as_integer * value)
 bool
 as_record_set_as_double(as_record* rec, const char* name, as_double * value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init(bin, name, (as_bin_value *) value);
@@ -284,6 +300,7 @@ as_record_set_as_double(as_record* rec, const char* name, as_double * value)
 bool
 as_record_set_string(as_record* rec, const char* name, as_string * value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init(bin, name, (as_bin_value *) value);
@@ -293,6 +310,7 @@ as_record_set_string(as_record* rec, const char* name, as_string * value)
 bool
 as_record_set_geojson(as_record* rec, const char* name, as_geojson * value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init(bin, name, (as_bin_value *) value);
@@ -302,6 +320,7 @@ as_record_set_geojson(as_record* rec, const char* name, as_geojson * value)
 bool
 as_record_set_bytes(as_record* rec, const char* name, as_bytes * value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init(bin, name, (as_bin_value *) value);
@@ -311,6 +330,7 @@ as_record_set_bytes(as_record* rec, const char* name, as_bytes * value)
 bool
 as_record_set_list(as_record* rec, const char* name, as_list * value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init(bin, name, (as_bin_value *) value);
@@ -320,6 +340,7 @@ as_record_set_list(as_record* rec, const char* name, as_list * value)
 bool
 as_record_set_map(as_record* rec, const char* name, as_map * value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin* bin = as_record_bin_forupdate(rec, name);
 	if ( !bin ) return false;
 	as_bin_init(bin, name, (as_bin_value *) value);
@@ -329,6 +350,7 @@ as_record_set_map(as_record* rec, const char* name, as_map * value)
 bool
 as_record_set_nil(as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_record_set(rec, name, (as_bin_value *) &as_nil);
 }
 
@@ -339,6 +361,7 @@ as_record_set_nil(as_record* rec, const char* name)
 as_bin_value*
 as_record_get(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	for(int i=0; i<rec->bins.size; i++) {
 		if ( strcmp(rec->bins.entries[i].name, name) == 0 ) {
 			return (as_bin_value *) rec->bins.entries[i].valuep;
@@ -350,6 +373,7 @@ as_record_get(const as_record* rec, const char* name)
 bool
 as_record_get_bool(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_bin_value* bv = as_record_get(rec, name);
 
 	if (! bv) {
@@ -372,6 +396,7 @@ as_record_get_bool(const as_record* rec, const char* name)
 int64_t
 as_record_get_int64(const as_record* rec, const char* name, int64_t fallback)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_integer * val = as_integer_fromval((as_val *) as_record_get(rec, name));
 	return val ? as_integer_toint(val) : fallback;
 }
@@ -379,6 +404,7 @@ as_record_get_int64(const as_record* rec, const char* name, int64_t fallback)
 double
 as_record_get_double(const as_record* rec, const char* name, double fallback)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_double * val = as_double_fromval((as_val *) as_record_get(rec, name));
 	return val ? val->value : fallback;
 }
@@ -386,6 +412,7 @@ as_record_get_double(const as_record* rec, const char* name, double fallback)
 char*
 as_record_get_str(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_string * val = as_string_fromval((as_val *) as_record_get(rec, name));
 	return val ? as_string_tostring(val) : NULL;
 }
@@ -393,6 +420,7 @@ as_record_get_str(const as_record* rec, const char* name)
 char*
 as_record_get_geojson_str(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_geojson * val = as_geojson_fromval((as_val *) as_record_get(rec, name));
 	return val ? as_geojson_get(val) : NULL;
 }
@@ -400,54 +428,63 @@ as_record_get_geojson_str(const as_record* rec, const char* name)
 as_integer*
 as_record_get_integer(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_integer_fromval((as_val *) as_record_get(rec, name));
 }
 
 as_double*
 as_record_get_as_double(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_double_fromval((as_val *) as_record_get(rec, name));
 }
 
 as_string*
 as_record_get_string(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_string_fromval((as_val *) as_record_get(rec, name));
 }
 
 as_geojson*
 as_record_get_geojson(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_geojson_fromval((as_val *) as_record_get(rec, name));
 }
 
 as_bytes*
 as_record_get_bytes(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_bytes_fromval((as_val *) as_record_get(rec, name));
 }
 
 as_list*
 as_record_get_list(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_list_fromval((as_val *) as_record_get(rec, name));
 }
 
 as_map*
 as_record_get_map(const as_record* rec, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_map_fromval((as_val *) as_record_get(rec, name));
 }
 
 as_val*
 as_record_get_udf_result(const as_record* rec)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return (as_val*)as_record_get(rec, "SUCCESS");
 }
 
 char*
 as_record_get_udf_error(const as_record* rec)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_record_get_str(rec, "FAILURE");
 }
 
@@ -458,6 +495,7 @@ as_record_get_udf_error(const as_record* rec)
 bool
 as_record_foreach(const as_record* rec, as_rec_foreach_callback callback, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( rec->bins.entries ) {
 		for ( int i = 0; i < rec->bins.size; i++ ) {
 			if ( callback(rec->bins.entries[i].name, (as_val *) rec->bins.entries[i].valuep, udata) == false ) {

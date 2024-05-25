@@ -47,18 +47,22 @@ static char* NewString = "New";
 static bool
 before(atf_suite* suite)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return true;
 }
 
 static bool
 after(atf_suite* suite)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "exp_operate.after\n");
 	return true;
 }
 
 static bool
 filter_prepare(as_key* keyA, as_key* keyB)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_key_init(keyA, NAMESPACE, SET, AString);
 	as_status rc = aerospike_key_remove(as, &err, NULL, keyA);
@@ -103,6 +107,7 @@ filter_prepare(as_key* keyA, as_key* keyB)
 
 TEST(exp_read_eval_errors, "exp read eval errors")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -145,6 +150,7 @@ TEST(exp_read_eval_errors, "exp read eval errors")
 
 TEST(exp_read_on_write_eval_errors, "exp read on write eval errors")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -192,6 +198,7 @@ TEST(exp_read_on_write_eval_errors, "exp read on write eval errors")
 
 TEST(exp_write_eval_errors, "exp write eval errors")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -259,6 +266,7 @@ TEST(exp_write_eval_errors, "exp write eval errors")
 
 TEST(exp_write_policy_errors, "exp write policy errors")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -373,6 +381,7 @@ TEST(exp_write_policy_errors, "exp write policy errors")
 
 TEST(exp_returns_unknown, "exp returns unknown")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -416,6 +425,7 @@ TEST(exp_returns_unknown, "exp returns unknown")
 
 TEST(exp_returns_nil, "exp returns nil")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -445,6 +455,7 @@ TEST(exp_returns_nil, "exp returns nil")
 
 TEST(exp_returns_int, "exp returns int")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -493,6 +504,7 @@ TEST(exp_returns_int, "exp returns int")
 
 TEST(exp_returns_float, "exp returns float")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -543,6 +555,7 @@ TEST(exp_returns_float, "exp returns float")
 
 TEST(exp_returns_string, "exp returns string")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -593,6 +606,7 @@ TEST(exp_returns_string, "exp returns string")
 
 TEST(exp_returns_blob, "exp returns blob")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -645,6 +659,7 @@ TEST(exp_returns_blob, "exp returns blob")
 
 TEST(exp_returns_bool, "exp returns bool")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -693,6 +708,7 @@ TEST(exp_returns_bool, "exp returns bool")
 
 TEST(exp_returns_hll, "exp returns hll")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -754,6 +770,7 @@ TEST(exp_returns_hll, "exp returns hll")
 
 TEST(exp_merge, "exp merge")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -796,6 +813,7 @@ TEST(exp_merge, "exp merge")
 
 TEST(exp_base64, "exp base64")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_exp_build(exp,
 		as_exp_and(
 			as_exp_cmp_eq(
@@ -835,6 +853,7 @@ TEST(exp_base64, "exp base64")
 
 SUITE(exp_operate, "filter expression tests")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	suite_before(before);
 	suite_after(after);
 

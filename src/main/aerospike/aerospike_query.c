@@ -144,12 +144,14 @@ typedef struct as_query_builder {
 static inline void
 as_query_log_iter(uint64_t parent_id, uint64_t task_id, uint32_t iter)
 {
+    fprintf(stderr, "aerospike_query.as_query_log_iter\n");
 	as_log_debug("Query parent=%" PRIu64 " task=%" PRIu64 " iter=%u", parent_id, task_id, iter);
 }
 
 static int
 as_query_aerospike_log(const as_aerospike* as, const char * file, const int line, const int level, const char * msg)
 {
+    fprintf(stderr, "aerospike_query.as_query_aerospike_log\n");
 	switch(level) {
 		case 1:
 			as_log_warn("%s:%d - %s", file, line, msg);
@@ -180,12 +182,14 @@ static const as_aerospike_hooks query_aerospike_hooks = {
 static int
 as_input_stream_destroy(as_stream *s)
 {
+    fprintf(stderr, "aerospike_query.as_input_stream_destroy\n");
 	return 0;
 }
 
 static as_val*
 as_input_stream_read(const as_stream* s)
 {
+    fprintf(stderr, "aerospike_query.as_input_stream_read\n");
 	as_val* val = NULL;
 	cf_queue_pop(as_stream_source(s), &val, CF_QUEUE_FOREVER);
 	return val;
@@ -194,6 +198,7 @@ as_input_stream_read(const as_stream* s)
 static as_stream_status
 as_input_stream_write(const as_stream* s, as_val* val)
 {
+    fprintf(stderr, "aerospike_query.as_input_stream_write\n");
     if (cf_queue_push(as_stream_source(s), &val) != CF_QUEUE_OK) {
         as_log_error("Write to client side stream failed.");
         as_val_destroy(val);
@@ -212,6 +217,7 @@ static const as_stream_hooks input_stream_hooks = {
 static bool
 as_query_aggregate_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "aerospike_query.as_query_aggregate_callback\n");
 	as_stream* input_stream = (as_stream*)udata;
 	as_stream_status status = as_stream_write(input_stream, (as_val*)v);
     return status? false : true;
@@ -220,12 +226,14 @@ as_query_aggregate_callback(const as_val* v, void* udata)
 static int
 as_output_stream_destroy(as_stream* s)
 {
+    fprintf(stderr, "aerospike_query.as_output_stream_destroy\n");
     return 0;
 }
 
 static as_stream_status
 as_output_stream_write(const as_stream* s, as_val* val)
 {
+    fprintf(stderr, "aerospike_query.as_output_stream_write\n");
 	as_query_user_callback* source = (as_query_user_callback*)as_stream_source(s);
 	bool rv = source->callback(val, source->udata);
 	as_val_destroy(val);
@@ -241,6 +249,7 @@ static const as_stream_hooks output_stream_hooks = {
 static void
 as_query_complete_async(as_event_executor* executor)
 {
+    fprintf(stderr, "aerospike_query.as_query_complete_async\n");
 	// If query callback already returned false, do not re-notify user.
 	if (executor->notify) {
 		((as_async_query_executor*)executor)->listener(executor->err, 0, executor->udata,
@@ -254,6 +263,7 @@ as_query_partition_retry_async(as_async_query_executor* qe, as_error* err);
 static inline void
 as_query_partition_executor_destroy(as_async_query_executor* qe)
 {
+    fprintf(stderr, "aerospike_query.as_query_partition_executor_destroy\n");
 	as_partition_tracker_destroy(qe->pt);
 	cf_free(qe->pt);
 	cf_free(qe->cmd_buf);
@@ -262,6 +272,7 @@ as_query_partition_executor_destroy(as_async_query_executor* qe)
 static void
 as_query_partition_notify(as_async_query_executor* qe, as_error* err)
 {
+    fprintf(stderr, "aerospike_query.as_query_partition_notify\n");
 	if (err) {
 		as_partition_error(qe->pt->parts_all);
 	}
@@ -277,6 +288,7 @@ as_query_partition_notify(as_async_query_executor* qe, as_error* err)
 static void
 as_query_partition_complete_async(as_event_executor* ee)
 {
+    fprintf(stderr, "aerospike_query.as_query_partition_complete_async\n");
 	as_async_query_executor* qe = (as_async_query_executor*)ee;
 
 	// Handle error.
@@ -319,6 +331,7 @@ as_query_parse_record_async(
 	as_error* err
 	)
 {
+    fprintf(stderr, "aerospike_query.as_query_parse_record_async\n");
 	as_record rec;
 	as_record_inita(&rec, msg->n_ops);
 	
@@ -361,6 +374,7 @@ as_query_parse_record_async(
 static bool
 as_query_parse_records_async(as_event_command* cmd)
 {
+    fprintf(stderr, "aerospike_query.as_query_parse_records_async\n");
 	as_error err;
 	as_async_query_command* qc = (as_async_query_command*)cmd;
 	as_async_query_executor* qe = cmd->udata;  // udata is overloaded to contain executor.
@@ -425,6 +439,7 @@ as_query_parse_records_async(as_event_command* cmd)
 static as_status
 as_query_parse_record(uint8_t** pp, as_msg* msg, as_query_task* task, as_error* err)
 {
+    fprintf(stderr, "aerospike_query.as_query_parse_record\n");
 	if (task->input_queue) {
 		// Parse aggregate return values.
 		as_val* val = 0;
@@ -497,6 +512,7 @@ as_query_parse_record(uint8_t** pp, as_msg* msg, as_query_task* task, as_error* 
 static as_status
 as_query_parse_records(as_error* err, as_command* cmd, as_node* node, uint8_t* buf, size_t size)
 {
+    fprintf(stderr, "aerospike_query.as_query_parse_records\n");
 	as_query_task* task = cmd->udata;
 	uint8_t* p = buf;
 	uint8_t* end = buf + size;
@@ -554,6 +570,7 @@ as_query_parse_records(as_error* err, as_command* cmd, as_node* node, uint8_t* b
 static uint8_t*
 as_query_write_range_string(uint8_t* p, char* begin, char* end)
 {
+    fprintf(stderr, "aerospike_query.as_query_write_range_string\n");
 	// Write particle type.
 	*p++ = AS_BYTES_STRING;
 	
@@ -581,6 +598,7 @@ as_query_write_range_string(uint8_t* p, char* begin, char* end)
 static uint8_t*
 as_query_write_range_blob(uint8_t* p, uint8_t* bytes, uint32_t size)
 {
+    fprintf(stderr, "aerospike_query.as_query_write_range_blob\n");
 	// Write particle type.
 	*p++ = AS_BYTES_BLOB;
 	
@@ -602,6 +620,7 @@ as_query_write_range_blob(uint8_t* p, uint8_t* bytes, uint32_t size)
 static uint8_t*
 as_query_write_range_geojson(uint8_t* p, char* begin, char* end)
 {
+    fprintf(stderr, "aerospike_query.as_query_write_range_geojson\n");
 	// Write particle type.
 	*p++ = AS_BYTES_GEOJSON;
 	
@@ -629,6 +648,7 @@ as_query_write_range_geojson(uint8_t* p, char* begin, char* end)
 static uint8_t*
 as_query_write_range_integer(uint8_t* p, int64_t begin, int64_t end)
 {
+    fprintf(stderr, "aerospike_query.as_query_write_range_integer\n");
 	// Write particle type.
 	*p++ = AS_BYTES_INTEGER;
 
@@ -652,6 +672,7 @@ as_query_command_size(
 	const as_policy_base* base_policy, const as_query* query, as_query_builder* qb, as_error* err
 	)
 {
+    fprintf(stderr, "aerospike_query.as_query_command_size\n");
 	qb->size = AS_HEADER_SIZE;
 	uint32_t filter_size = 0;
 	uint16_t n_fields = 0;
@@ -854,6 +875,7 @@ as_query_command_init(
 	uint64_t task_id, as_query_builder* qb
 	)
 {
+    fprintf(stderr, "aerospike_query.as_query_command_init\n");
 	// Write command buffer.
 	uint8_t* p;
 	
@@ -1091,6 +1113,7 @@ as_query_command_init(
 static as_status
 as_query_command_execute_old(as_query_task* task)
 {
+    fprintf(stderr, "aerospike_query.as_query_command_execute_old\n");
 	as_error err;
 	as_error_init(&err);
 
@@ -1177,6 +1200,7 @@ as_query_builder_init(
 	as_node_partitions* np
 	)
 {
+    fprintf(stderr, "aerospike_query.as_query_builder_init\n");
 	qb->pt = pt;
 	qb->np = np;
 	qb->opsbuffers = opsbuffers;
@@ -1187,6 +1211,7 @@ as_query_builder_init(
 static as_status
 as_query_command_execute_new(as_query_task* task)
 {
+    fprintf(stderr, "aerospike_query.as_query_command_execute_new\n");
 	as_error err;
 	as_error_init(&err);
 
@@ -1269,6 +1294,7 @@ as_query_command_execute_new(as_query_task* task)
 static void
 as_query_worker_old(void* data)
 {
+    fprintf(stderr, "aerospike_query.as_query_worker_old\n");
 	as_query_task* task = (as_query_task*)data;
 		
 	as_query_complete_task complete_task;
@@ -1288,6 +1314,7 @@ as_query_worker_old(void* data)
 static void
 as_query_worker_new(void* data)
 {
+    fprintf(stderr, "aerospike_query.as_query_worker_new\n");
 	as_query_task* task = (as_query_task*)data;
 		
 	as_query_complete_task complete_task;
@@ -1307,6 +1334,7 @@ as_query_worker_new(void* data)
 static as_status
 as_query_execute(as_query_task* task, const as_query* query, as_nodes* nodes)
 {
+    fprintf(stderr, "aerospike_query.as_query_execute\n");
 	as_cluster_add_tran(task->cluster);
 	as_status status = AEROSPIKE_OK;
 
@@ -1418,6 +1446,7 @@ as_query_execute(as_query_task* task, const as_query* query, as_nodes* nodes)
 static void
 as_query_aggregate(void* data)
 {
+    fprintf(stderr, "aerospike_query.as_query_aggregate\n");
 	as_query_task_aggr* task = (as_query_task_aggr*)data;
 	const as_query* query = task->query;
 	
@@ -1475,6 +1504,7 @@ as_query_partitions(
 	as_cluster* cluster, as_error* err, const as_policy_query* policy, const as_query* query,
 	as_partition_tracker* pt, aerospike_query_foreach_callback callback, void* udata)
 {
+    fprintf(stderr, "aerospike_query.as_query_partitions\n");
 	as_cluster_add_tran(cluster);
 	uint64_t parent_id = as_random_get_uint64();
 	as_status status = AEROSPIKE_OK;
@@ -1605,6 +1635,7 @@ as_query_partition_execute_async(
 	as_async_query_executor* qe, as_partition_tracker* pt, as_error* err
 	)
 {
+    fprintf(stderr, "aerospike_query.as_query_partition_execute_async\n");
 	as_event_executor* ee = &qe->executor;
 	uint32_t n_nodes = pt->node_parts.size;
 
@@ -1768,6 +1799,7 @@ as_query_partition_async(
 	as_event_loop* event_loop
 	)
 {
+    fprintf(stderr, "aerospike_query.as_query_partition_async\n");
 	as_cluster_add_tran(cluster);
 	pt->sleep_between_retries = 0;
 	as_status status = as_partition_tracker_assign(pt, cluster, query->ns, err);
@@ -1847,6 +1879,7 @@ as_query_partition_async(
 static as_status
 as_query_partition_retry_async(as_async_query_executor* qe_old, as_error* err)
 {
+    fprintf(stderr, "aerospike_query.as_query_partition_retry_async\n");
 	as_async_query_executor* qe = cf_malloc(sizeof(as_async_query_executor));
 	qe->listener = qe_old->listener;
 	qe->cluster = qe_old->cluster;
@@ -1897,6 +1930,7 @@ convert_query_to_scan(
 	as_scan* scan
 	)
 {
+    fprintf(stderr, "aerospike_query.convert_query_to_scan\n");
 	as_policy_scan_init(scan_policy);
 	memcpy(&scan_policy->base, &query_policy->base, sizeof(as_policy_base));
 	scan_policy->max_records = query->max_records;
@@ -1928,6 +1962,7 @@ convert_query_to_scan(
 bool
 as_async_query_should_retry(as_event_command* cmd, as_status status)
 {
+    fprintf(stderr, "aerospike_query.as_async_query_should_retry\n");
 	as_async_query_command* qc = (as_async_query_command*)cmd;
 	as_async_query_executor* qe = cmd->udata;
 	return as_partition_tracker_should_retry(qe->pt, qc->np, status);
@@ -1938,6 +1973,7 @@ aerospike_query_foreach(
 	aerospike* as, as_error* err, const as_policy_query* policy, as_query* query,
 	aerospike_query_foreach_callback callback, void* udata)
 {
+    fprintf(stderr, "aerospike_query.aerospike_query_foreach\n");
 	if (query->ops) {
 		return as_error_update(err, AEROSPIKE_ERR_PARAM,
 			"Use aerospike_query_background() for background queries");
@@ -2085,6 +2121,7 @@ aerospike_query_partitions(
 	as_partition_filter* pf, aerospike_query_foreach_callback callback, void* udata
 	)
 {
+    fprintf(stderr, "aerospike_query.aerospike_query_parttions\n");
 	if (query->apply.function[0] || query->ops) {
 		return as_error_update(err, AEROSPIKE_ERR_PARAM,
 			"Aggregation or background queries cannot query by partition");
@@ -2136,6 +2173,7 @@ aerospike_query_async(
 	aerospike* as, as_error* err, const as_policy_query* policy, as_query* query,
 	as_async_query_record_listener listener, void* udata, as_event_loop* event_loop)
 {
+    fprintf(stderr, "aerospike_query.aerospike_query_async\n");
 	if (query->apply.function[0] || query->ops) {
 		return as_error_set_message(err, AEROSPIKE_ERR_CLIENT,
 			"Async aggregation or background queries are not supported");
@@ -2305,6 +2343,7 @@ aerospike_query_partitions_async(
 	as_event_loop* event_loop
 	)
 {
+    fprintf(stderr, "aerospike_query.aerospike_query_partitions_async\n");
 	if (query->apply.function[0] || query->ops) {
 		return as_error_update(err, AEROSPIKE_ERR_PARAM,
 			"Aggregation or background queries cannot query by partition");
@@ -2350,6 +2389,7 @@ aerospike_query_background(
 	aerospike* as, as_error* err, const as_policy_write* policy,
 	const as_query* query, uint64_t* query_id)
 {
+    fprintf(stderr, "aerospike_query.aerospike_query_background\n");
 	as_error_reset(err);
 	
 	if (! policy) {
@@ -2406,5 +2446,6 @@ aerospike_query_background(
 uint32_t
 as_query_get_info_timeout(as_event_executor* executor)
 {
+    fprintf(stderr, "aerospike_query.as_query_get_info_timeout\n");
 	return ((as_async_query_executor*)executor)->info_timeout;
 }

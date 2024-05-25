@@ -27,6 +27,7 @@
 static as_scan*
 as_scan_defaults(as_scan* scan, bool free, const char* ns, const char* set)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (scan == NULL) return scan;
 
 	scan->_free = free;
@@ -68,6 +69,7 @@ as_scan_defaults(as_scan* scan, bool free, const char* ns, const char* set)
 as_scan*
 as_scan_new(const char* ns, const char* set)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_scan* scan = (as_scan *) cf_malloc(sizeof(as_scan));
 	if ( ! scan ) return NULL;
 	return as_scan_defaults(scan, true, ns, set);
@@ -76,6 +78,7 @@ as_scan_new(const char* ns, const char* set)
 as_scan*
 as_scan_init(as_scan* scan, const char* ns, const char* set)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !scan ) return scan;
 	return as_scan_defaults(scan, false, ns, set);
 }
@@ -83,6 +86,7 @@ as_scan_init(as_scan* scan, const char* ns, const char* set)
 void
 as_scan_destroy(as_scan* scan)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !scan ) return;
 
 	scan->ns[0] = '\0';
@@ -115,6 +119,7 @@ as_scan_destroy(as_scan* scan)
 bool
 as_scan_select_init(as_scan* scan, uint16_t n)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !scan ) return false;
 	if ( scan->select.entries ) return false;
 
@@ -131,6 +136,7 @@ as_scan_select_init(as_scan* scan, uint16_t n)
 bool
 as_scan_select(as_scan* scan, const char * bin)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// test preconditions
 	if ( !scan || !bin || strlen(bin) >= AS_BIN_NAME_MAX_SIZE ) {
 		return false;
@@ -148,6 +154,7 @@ as_scan_select(as_scan* scan, const char * bin)
 bool
 as_scan_set_nobins(as_scan* scan, bool nobins)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !scan ) return false;
 	scan->no_bins = nobins;
 	return true;
@@ -156,6 +163,7 @@ as_scan_set_nobins(as_scan* scan, bool nobins)
 bool
 as_scan_set_concurrent(as_scan* scan, bool concurrent)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !scan ) return false;
 	scan->concurrent = concurrent;
 	return true;
@@ -164,6 +172,7 @@ as_scan_set_concurrent(as_scan* scan, bool concurrent)
 bool
 as_scan_apply_each(as_scan* scan, const char* module, const char* function, as_list* arglist)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !module || !function ) return false;
 	as_udf_call_init(&scan->apply_each, module, function, arglist);
 	return true;
@@ -176,6 +185,7 @@ as_scan_apply_each(as_scan* scan, const char* module, const char* function, as_l
 bool
 as_scan_to_bytes(const as_scan* scan, uint8_t** bytes, uint32_t* bytes_size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_packer pk = as_cdt_begin();
 	as_pack_string(&pk, scan->ns);
 	as_pack_string(&pk, scan->set);
@@ -262,6 +272,7 @@ as_scan_to_bytes(const as_scan* scan, uint8_t** bytes, uint32_t* bytes_size)
 bool
 as_scan_from_bytes(as_scan* scan, const uint8_t* bytes, uint32_t bytes_size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Initialize scan so it can be safely destroyed if a failure occurs.
 	// Assume scan passed on the stack.
 	as_scan_defaults(scan, false, "", "");
@@ -490,6 +501,7 @@ HandleError:
 as_scan*
 as_scan_from_bytes_new(const uint8_t* bytes, uint32_t bytes_size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_scan* scan = (as_scan*)cf_malloc(sizeof(as_scan));
 
 	if (! as_scan_from_bytes(scan, bytes, bytes_size)) {
@@ -507,6 +519,7 @@ as_scan_from_bytes_new(const uint8_t* bytes, uint32_t bytes_size)
 bool
 as_scan_compare(as_scan* s1, as_scan* s2)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (s1->_free != s2->_free) {
 		as_cmp_error();
 	}

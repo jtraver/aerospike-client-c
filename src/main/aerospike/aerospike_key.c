@@ -54,6 +54,7 @@ typedef struct as_read_info_s {
 static inline as_status
 as_key_partition_init(as_cluster* cluster, as_error* err, const as_key* key, as_partition_info* pi)
 {
+    fprintf(stderr, "aerospike_key.as_key_partition_init\n");
 	as_error_reset(err);
 
 	as_status status = as_key_set_digest(err, (as_key*)key);
@@ -71,6 +72,7 @@ as_command_init_read(
 	const as_parse_results_fn fn, void* udata
 	)
 {
+    fprintf(stderr, "aerospike_key.as_command_init_read\n");
 	cmd->cluster = cluster;
 	cmd->policy = policy;
 	cmd->node = NULL;
@@ -117,6 +119,7 @@ as_command_execute_read(
 	const as_parse_results_fn fn, void* udata
 	)
 {
+    fprintf(stderr, "aerospike_key.as_command_execute_read\n");
 	as_command cmd;
 	as_command_init_read(&cmd, cluster, policy, replica, read_mode_sc, size, pi,
 						 fn, udata);
@@ -132,6 +135,7 @@ as_command_init_write(
 	size_t size, as_partition_info* pi, const as_parse_results_fn fn, void* udata
 	)
 {
+    fprintf(stderr, "aerospike_key.as_comand_init_write\n");
 	cmd->cluster = cluster;
 	cmd->policy = policy;
 	cmd->node = NULL;
@@ -154,6 +158,7 @@ as_event_command_init_read(
 	as_policy_replica replica, as_policy_read_mode_sc read_mode_sc, bool sc_mode, as_read_info* ri
 	)
 {
+    fprintf(stderr, "aerospike_key.as_event_command_init_read\n");
 	if (sc_mode) {
 		switch (read_mode_sc) {
 			case AS_POLICY_READ_MODE_SC_SESSION:
@@ -184,6 +189,7 @@ as_event_command_init_read(
 static inline uint32_t
 as_command_filter_size(const as_policy_base* policy, uint16_t* n_fields)
 {
+    fprintf(stderr, "aerospike_key.as_command_filter_size\n");
 	if (policy->filter_exp) {
 		(*n_fields)++;
 		return AS_FIELD_HEADER_SIZE + policy->filter_exp->packed_sz;
@@ -194,6 +200,7 @@ as_command_filter_size(const as_policy_base* policy, uint16_t* n_fields)
 static inline uint8_t*
 as_command_write_filter(const as_policy_base* policy, uint32_t filter_size, uint8_t* p)
 {
+    fprintf(stderr, "aerospike_key.as_command_write_filter\n");
 	if (policy->filter_exp) {
 		return as_exp_write(policy->filter_exp, p);
 	}
@@ -209,6 +216,7 @@ aerospike_key_get(
 	aerospike* as, as_error* err, const as_policy_read* policy, const as_key* key, as_record** rec
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_get\n");
 	if (! policy) {
 		policy = &as->config.policies.read;
 	}
@@ -254,6 +262,7 @@ aerospike_key_get_async(
 	as_pipe_listener pipe_listener
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_get_async\n");
 	if (! policy) {
 		policy = &as->config.policies.read;
 	}
@@ -300,6 +309,7 @@ aerospike_key_select(
 	const char* bins[], as_record** rec
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_select\n");
 	if (! policy) {
 		policy = &as->config.policies.read;
 	}
@@ -358,6 +368,7 @@ aerospike_key_select_async(
 	as_async_record_listener listener, void* udata, as_event_loop* event_loop, as_pipe_listener pipe_listener
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_select_async\n");
 	if (! policy) {
 		policy = &as->config.policies.read;
 	}
@@ -417,6 +428,7 @@ aerospike_key_exists(
 	aerospike* as, as_error* err, const as_policy_read* policy, const as_key* key, as_record** rec
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_exists\n");
 	if (! policy) {
 		policy = &as->config.policies.read;
 	}
@@ -461,6 +473,7 @@ aerospike_key_exists_async(
 	as_pipe_listener pipe_listener
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_exists_async\n");
 	if (! policy) {
 		policy = &as->config.policies.read;
 	}
@@ -517,6 +530,7 @@ as_put_init(
 	as_queue* buffers, as_error* err
 	)
 {
+    fprintf(stderr, "aerospike_key.as_put_init\n");
 	put->policy = policy;
 	put->key = key;
 	put->rec = rec;
@@ -541,6 +555,7 @@ as_put_init(
 static size_t
 as_put_write(void* udata, uint8_t* buf)
 {
+    fprintf(stderr, "aerospike_key.as_put_write\n");
 	as_put* put = udata;
 	const as_policy_write* policy = put->policy;
 	as_record* rec = put->rec;
@@ -569,6 +584,7 @@ aerospike_key_put(
 	aerospike* as, as_error* err, const as_policy_write* policy, const as_key* key, as_record* rec
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_put\n");
 	if (! policy) {
 		policy = &as->config.policies.write;
 	}
@@ -614,6 +630,7 @@ aerospike_key_put_async_ex(
 	size_t* length, size_t* comp_length
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_put_async_ex\n");
 	if (! policy) {
 		policy = &as->config.policies.write;
 	}
@@ -705,6 +722,7 @@ aerospike_key_put_async(
 	as_async_write_listener listener, void* udata, as_event_loop* event_loop, as_pipe_listener pipe_listener
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_put_async\n");
 	return aerospike_key_put_async_ex(as, err, policy, key, rec, listener, udata, event_loop, pipe_listener, NULL, NULL);
 }
 
@@ -717,6 +735,7 @@ aerospike_key_remove(
 	aerospike* as, as_error* err, const as_policy_remove* policy, const as_key* key
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_remove\n");
 	if (! policy) {
 		policy = &as->config.policies.remove;
 	}
@@ -762,6 +781,7 @@ aerospike_key_remove_async_ex(
 	as_pipe_listener pipe_listener, size_t* length
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_remove_async_ex\n");
 	if (! policy) {
 		policy = &as->config.policies.remove;
 	}
@@ -805,6 +825,7 @@ aerospike_key_remove_async(
 	as_pipe_listener pipe_listener
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_remove_async\n");
 	return aerospike_key_remove_async_ex(as, err, policy, key, listener, udata, event_loop, pipe_listener, NULL);
 }
 
@@ -829,6 +850,7 @@ typedef struct as_operate_s {
 static as_status
 as_operate_set_attr(as_operate* oper, as_error* err)
 {
+    fprintf(stderr, "aerospike_key.as_operate_set_attr\n");
 	bool respond_all_ops = false;
 
 	oper->read_attr = 0;
@@ -888,6 +910,7 @@ as_operate_init(
 	as_error* err
 	)
 {
+    fprintf(stderr, "aerospike_key.as_operate_init\n");
 	oper->key = key;
 	oper->ops = ops;
 	oper->buffers = buffers;
@@ -926,6 +949,7 @@ as_operate_init(
 static size_t
 as_operate_write(void* udata, uint8_t* buf)
 {
+    fprintf(stderr, "aerospike_key.as_operate_write\n");
 	as_operate* oper = udata;
 	const as_policy_operate* policy = oper->policy;
 	const as_operations* ops = oper->ops;
@@ -966,6 +990,7 @@ aerospike_key_operate(
 	const as_operations* ops, as_record** rec
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_operate\n");
 	uint32_t n_operations = ops->binops.size;
 
 	if (n_operations == 0) {
@@ -1024,6 +1049,7 @@ aerospike_key_operate_async(
 	as_async_record_listener listener, void* udata, as_event_loop* event_loop, as_pipe_listener pipe_listener
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_operate_async\n");
 	uint32_t n_operations = ops->binops.size;
 	
 	if (n_operations == 0) {
@@ -1138,6 +1164,7 @@ as_apply_init(
 	const char* function, as_list* arglist
 	)
 {
+    fprintf(stderr, "aerospike_key.as_apply_init\n");
 	ap->policy = policy;
 	ap->key = key;
 	ap->module = module;
@@ -1165,6 +1192,7 @@ as_apply_init(
 static size_t
 as_apply_write(void* udata, uint8_t* buf)
 {
+    fprintf(stderr, "aerospike_key.as_apply_write\n");
 	as_apply* ap = udata;
 	const as_policy_apply* policy = ap->policy;
 
@@ -1186,6 +1214,7 @@ aerospike_key_apply(
 	const char* module, const char* function, as_list* arglist, as_val** result
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_apply\n");
 	if (! policy) {
 		policy = &as->config.policies.apply;
 	}
@@ -1222,6 +1251,7 @@ aerospike_key_apply_async(
 	as_pipe_listener pipe_listener
 	)
 {
+    fprintf(stderr, "aerospike_key.aerospike_key_apply_async\n");
 	if (! policy) {
 		policy = &as->config.policies.apply;
 	}

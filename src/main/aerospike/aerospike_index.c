@@ -36,6 +36,7 @@ aerospike_index_create_ctx(
 	as_index_datatype dtype, as_cdt_ctx* ctx
 	)
 {
+    fprintf(stderr, "aerospike_index.aerospike_index_create_ctx\n");
 	as_error_reset(err);
 
 	if (! policy) {
@@ -153,6 +154,7 @@ aerospike_index_create_ctx(
 static as_status
 aerospike_index_get_status(as_index_task* task, as_error* err, as_policy_info* policy, char* command)
 {
+    fprintf(stderr, "aerospike_index.aerospike_index_get_status\n");
 	// Index is not done if any node reports percent completed < 100.
 	as_nodes* nodes = as_nodes_reserve(task->as->cluster);
 
@@ -208,6 +210,7 @@ aerospike_index_get_status(as_index_task* task, as_error* err, as_policy_info* p
 as_status
 aerospike_index_create_wait(as_error* err, as_index_task* task, uint32_t interval_ms)
 {
+    fprintf(stderr, "aerospike_index.aerospike_index_create_wait\n");
 	if (task->done) {
 		return AEROSPIKE_OK;
 	}
@@ -250,6 +253,7 @@ aerospike_index_remove(
 	const char* index_name
 	)
 {
+    fprintf(stderr, "aerospike_index.aerospike_index_remove\n");
 	as_error_reset(err);
 	
 	char command[1024];

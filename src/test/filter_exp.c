@@ -52,6 +52,7 @@ static char* EString = "E";
 static bool
 before(atf_suite* suite)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! udf_put(LUA_FILE)) {
 		error("failure while uploading: %s", LUA_FILE);
 		return false;
@@ -67,6 +68,8 @@ before(atf_suite* suite)
 static bool
 after(atf_suite* suite)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "filter_exp.after\n");
 	if (! udf_remove(LUA_FILE)) {
 		error("failure while removing: %s", LUA_FILE);
 		return false;
@@ -77,6 +80,7 @@ after(atf_suite* suite)
 static bool
 filter_prepare(as_key* keyA, as_key* keyB)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_key_init(keyA, NAMESPACE, SET, AString);
 	as_status rc = aerospike_key_remove(as, &err, NULL, keyA);
@@ -123,6 +127,7 @@ filter_prepare(as_key* keyA, as_key* keyB)
 static bool
 filter_prepare_bitwise(as_key* keyA)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_key_init(keyA, NAMESPACE, SET, AString);
 	as_status rc = aerospike_key_remove(as, &err, NULL, keyA);
@@ -152,6 +157,7 @@ filter_prepare_bitwise(as_key* keyA)
 
 TEST(filter_put, "filter put")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -202,6 +208,7 @@ TEST(filter_put, "filter put")
 
 TEST(filter_get, "filter get")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -233,6 +240,7 @@ TEST(filter_get, "filter get")
 
 TEST(filter_batch, "filter batch")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_exp_build(filter,
 		as_exp_cmp_eq(as_exp_bin_int(AString), as_exp_int(1)));
 	assert_not_null(filter);
@@ -269,6 +277,7 @@ TEST(filter_batch, "filter batch")
 
 TEST(filter_delete, "filter delete")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -306,6 +315,7 @@ TEST(filter_delete, "filter delete")
 
 TEST(filter_operate, "filter operate read")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -344,6 +354,7 @@ TEST(filter_operate, "filter operate read")
 
 TEST(filter_udf, "filter udf")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -374,6 +385,7 @@ TEST(filter_udf, "filter udf")
 
 TEST(filter_call, "filter call")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -439,6 +451,7 @@ TEST(filter_call, "filter call")
 
 TEST(filter_call_chain, "filter call chain")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_key keyA;
 
@@ -489,6 +502,7 @@ TEST(filter_call_chain, "filter call chain")
 
 TEST(filter_call_modify, "filter call modify")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -592,6 +606,7 @@ TEST(filter_call_modify, "filter call modify")
 
 TEST(filter_call_context, "filter call ctx")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -671,6 +686,7 @@ TEST(filter_call_context, "filter call ctx")
 
 TEST(filter_call_context_param, "filter call ctx param")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -739,6 +755,7 @@ TEST(filter_call_context_param, "filter call ctx param")
 
 TEST(filter_rec_key, "filter rec key")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -786,6 +803,7 @@ TEST(filter_rec_key, "filter rec key")
 
 TEST(filter_float_bin, "filter float bin")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -825,6 +843,7 @@ TEST(filter_float_bin, "filter float bin")
 
 TEST(filter_blob_key, "filter blob key")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -865,6 +884,7 @@ TEST(filter_blob_key, "filter blob key")
 
 TEST(filter_since_update, "filter since update")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -904,6 +924,7 @@ TEST(filter_since_update, "filter since update")
 
 TEST(filter_compare_string_to_unk, "filter compare string to unk")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -943,6 +964,7 @@ TEST(filter_compare_string_to_unk, "filter compare string to unk")
 
 TEST(filter_compare_strings, "filter compare strings")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -982,6 +1004,7 @@ TEST(filter_compare_strings, "filter compare strings")
 
 TEST(filter_compare_lists_basic, "filter compare lists basic")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	assert_true(filter_prepare(&keyA, &keyB));
@@ -1138,6 +1161,7 @@ TEST(filter_compare_lists_basic, "filter compare lists basic")
 
 TEST(filter_compare_maps_basic, "filter compare maps basic")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	assert_true(filter_prepare(&keyA, &keyB));
@@ -1345,6 +1369,7 @@ TEST(filter_compare_maps_basic, "filter compare maps basic")
 
 TEST(filter_xor, "filter xor")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1376,6 +1401,7 @@ TEST(filter_xor, "filter xor")
 
 TEST(filter_add, "filter add")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1408,6 +1434,7 @@ TEST(filter_add, "filter add")
 
 TEST(filter_add_1, "filter add 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1439,6 +1466,7 @@ TEST(filter_add_1, "filter add 1")
 
 TEST(filter_add_float, "filter add float")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1473,6 +1501,7 @@ TEST(filter_add_float, "filter add float")
 
 TEST(filter_add_float_1, "filter add float 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1504,6 +1533,7 @@ TEST(filter_add_float_1, "filter add float 1")
 
 TEST(filter_sub, "filter sub")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1537,6 +1567,7 @@ TEST(filter_sub, "filter sub")
 
 TEST(filter_sub_1, "filter sub 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1568,6 +1599,7 @@ TEST(filter_sub_1, "filter sub 1")
 
 TEST(filter_sub_float, "filter sub float")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1602,6 +1634,7 @@ TEST(filter_sub_float, "filter sub float")
 
 TEST(filter_sub_float_1, "filter sub float 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1635,6 +1668,7 @@ TEST(filter_sub_float_1, "filter sub float 1")
 
 TEST(filter_mul, "filter mul")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1668,6 +1702,7 @@ TEST(filter_mul, "filter mul")
 
 TEST(filter_mul_1, "filter mul 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1699,6 +1734,7 @@ TEST(filter_mul_1, "filter mul 1")
 
 TEST(filter_div, "filter div")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1732,6 +1768,7 @@ TEST(filter_div, "filter div")
 
 TEST(filter_div_1, "filter div 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1763,6 +1800,7 @@ TEST(filter_div_1, "filter div 1")
 
 TEST(filter_div_float, "filter div float")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1795,6 +1833,7 @@ TEST(filter_div_float, "filter div float")
 
 TEST(filter_div_float_1, "filter div float 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1828,6 +1867,7 @@ TEST(filter_div_float_1, "filter div float 1")
 
 TEST(filter_pow, "filter pow")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1862,6 +1902,7 @@ TEST(filter_pow, "filter pow")
 
 TEST(filter_log, "filter log")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1896,6 +1937,7 @@ TEST(filter_log, "filter log")
 
 TEST(filter_mod, "filter mod")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1926,6 +1968,7 @@ TEST(filter_mod, "filter mod")
 
 TEST(filter_abs, "filter abs")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1956,6 +1999,7 @@ TEST(filter_abs, "filter abs")
 
 TEST(filter_floor, "filter floor")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -1987,6 +2031,7 @@ TEST(filter_floor, "filter floor")
 
 TEST(filter_ceil, "filter ceil")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -2018,6 +2063,7 @@ TEST(filter_ceil, "filter ceil")
 
 TEST(filter_to_int, "filter to_int")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -2049,6 +2095,7 @@ TEST(filter_to_int, "filter to_int")
 
 TEST(filter_to_float, "filter to float")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -2080,6 +2127,7 @@ TEST(filter_to_float, "filter to float")
 
 TEST(filter_bitwise_and, "filter bitwise and")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2146,6 +2194,7 @@ TEST(filter_bitwise_and, "filter bitwise and")
 
 TEST(filter_bitwise_or, "filter bitwise or")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2212,6 +2261,7 @@ TEST(filter_bitwise_or, "filter bitwise or")
 
 TEST(filter_bitwise_xor, "filter bitwise xor")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2278,6 +2328,7 @@ TEST(filter_bitwise_xor, "filter bitwise xor")
 
 TEST(filter_bitwise_not, "filter bitwise not")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2330,6 +2381,7 @@ TEST(filter_bitwise_not, "filter bitwise not")
 
 TEST(filter_bitwise_lshift, "filter bitwise lshift")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2386,6 +2438,7 @@ TEST(filter_bitwise_lshift, "filter bitwise lshift")
 
 TEST(filter_bitwise_rshift, "filter bitwise rshift")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2442,6 +2495,7 @@ TEST(filter_bitwise_rshift, "filter bitwise rshift")
 
 TEST(filter_bitwise_arshift, "filter bitwise arshift")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2498,6 +2552,7 @@ TEST(filter_bitwise_arshift, "filter bitwise arshift")
 
 TEST(filter_bitwise_count, "filter bitwise count")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2558,6 +2613,7 @@ TEST(filter_bitwise_count, "filter bitwise count")
 
 TEST(filter_bitwise_lscan, "filter bitwise lscan")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2654,6 +2710,7 @@ TEST(filter_bitwise_lscan, "filter bitwise lscan")
 
 TEST(filter_bitwise_rscan, "filter bitwise rscan")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	bool b = filter_prepare_bitwise(&keyA);
 
@@ -2750,6 +2807,7 @@ TEST(filter_bitwise_rscan, "filter bitwise rscan")
 
 TEST(filter_min, "filter min")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -2783,6 +2841,7 @@ TEST(filter_min, "filter min")
 
 TEST(filter_max, "filter max")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -2816,6 +2875,7 @@ TEST(filter_max, "filter max")
 
 TEST(filter_min_float, "filter min float")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -2849,6 +2909,7 @@ TEST(filter_min_float, "filter min float")
 
 TEST(filter_max_float, "filter max float")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -2882,6 +2943,7 @@ TEST(filter_max_float, "filter max float")
 
 TEST(filter_let, "filter let")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key rkey;
 	as_key_init_int64(&rkey, NAMESPACE, SET, 0);
 
@@ -2924,6 +2986,7 @@ TEST(filter_let, "filter let")
 
 TEST(filter_cond, "filter cond")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key rkey;
 	as_key_init_int64(&rkey, NAMESPACE, SET, 0);
 
@@ -3014,6 +3077,7 @@ TEST(filter_cond, "filter cond")
 
 TEST(filter_list_value_to_bin, "filter list value to bin")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -3047,6 +3111,7 @@ TEST(filter_list_value_to_bin, "filter list value to bin")
 
 TEST(filter_map_value_to_bin, "filter map value to bin")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -3080,6 +3145,7 @@ TEST(filter_map_value_to_bin, "filter map value to bin")
 
 TEST(filter_blob_value_to_bin, "filter blob value to bin")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key keyA;
 	as_key keyB;
 	bool b = filter_prepare(&keyA, &keyB);
@@ -3109,6 +3175,7 @@ TEST(filter_blob_value_to_bin, "filter blob value to bin")
 
 TEST(filter_hll_value_to_bin, "filter hll value to bin")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 #define HLLBIN "hllbin"
 	as_key keyA;
 	as_key keyB;
@@ -3161,6 +3228,7 @@ TEST(filter_hll_value_to_bin, "filter hll value to bin")
 
 SUITE(filter_exp, "filter expression tests")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	suite_before(before);
 	suite_after(after);
 

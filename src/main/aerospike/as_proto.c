@@ -23,6 +23,7 @@
 void
 as_proto_swap_to_be(as_proto *p)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t	version = (uint8_t)p->version;
 	uint8_t type = (uint8_t)p->type;
 	p->version = p->type = 0;
@@ -35,6 +36,7 @@ as_proto_swap_to_be(as_proto *p)
 void
 as_proto_swap_from_be(as_proto *p)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t	version = (uint8_t)p->version;
 	uint8_t type = (uint8_t)p->type;
 	p->version = p->type = 0;
@@ -47,6 +49,7 @@ as_proto_swap_from_be(as_proto *p)
 void
 as_msg_swap_header_from_be(as_msg *m)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	m->generation = cf_swap_from_be32(m->generation);
 	m->record_ttl =  cf_swap_from_be32(m->record_ttl);
 	m->transaction_ttl = cf_swap_from_be32(m->transaction_ttl);
@@ -57,6 +60,7 @@ as_msg_swap_header_from_be(as_msg *m)
 as_status
 as_proto_version_error(as_error* err, as_proto* proto)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_error_update(err, AEROSPIKE_ERR_CLIENT, "Invalid proto version: %u Expected: %u",
 						   (uint32_t)proto->version, AS_PROTO_VERSION);
 }
@@ -64,6 +68,7 @@ as_proto_version_error(as_error* err, as_proto* proto)
 as_status
 as_proto_type_error(as_error* err, as_proto* proto, uint8_t expected)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_error_update(err, AEROSPIKE_ERR_CLIENT, "Invalid proto type: %u Expected: %u",
 						   (uint32_t)proto->type, (uint32_t)expected);
 }
@@ -71,18 +76,21 @@ as_proto_type_error(as_error* err, as_proto* proto, uint8_t expected)
 as_status
 as_proto_size_error(as_error* err, size_t size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_error_update(err, AEROSPIKE_ERR_CLIENT, "Invalid proto size: %zu", size);
 }
 
 as_status
 as_compressed_size_error(as_error* err, size_t size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_error_update(err, AEROSPIKE_ERR_CLIENT, "Invalid compressed size: %zu", size);
 }
 
 as_status
 as_proto_parse(as_error* err, as_proto* proto)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (proto->version != AS_PROTO_VERSION) {
 		return as_proto_version_error(err, proto);
 	}
@@ -98,6 +106,7 @@ as_proto_parse(as_error* err, as_proto* proto)
 as_status
 as_proto_decompress(as_error* err, uint8_t* trg, size_t trg_sz, uint8_t* src, size_t src_sz)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uLongf sz = (uLongf)trg_sz;
 	int rv = uncompress(trg, &sz, src + sizeof(uint64_t), (uLong)(src_sz - sizeof(uint64_t)));
 

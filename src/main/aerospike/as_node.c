@@ -63,12 +63,14 @@ extern uint32_t as_event_loop_capacity;
 static inline as_racks*
 as_racks_load(as_racks** racks)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return (as_racks*)as_load_ptr((void* const*)racks);
 }
 
 static inline void
 as_racks_release(as_racks* racks)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (as_aaf_uint32_rls(&racks->ref_count, -1) == 0) {
 		cf_free(racks);
 	}
@@ -77,6 +79,7 @@ as_racks_release(as_racks* racks)
 static as_async_conn_pool*
 as_node_create_async_pools(uint32_t min_conns_per_node, uint32_t max_conns_per_node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Create one queue per event manager.
 	as_async_conn_pool* pools = cf_malloc(sizeof(as_async_conn_pool) * as_event_loop_capacity);
 	
@@ -98,6 +101,7 @@ as_node_create_async_pools(uint32_t min_conns_per_node, uint32_t max_conns_per_n
 static void
 as_latency_buckets_init(as_latency_buckets* latency_buckets, uint32_t latency_columns, uint32_t latency_shift)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	latency_buckets->latency_columns = latency_columns;
 	latency_buckets->latency_shift = latency_shift;
 	latency_buckets->buckets = cf_malloc(sizeof(uint64_t) * latency_columns);
@@ -110,6 +114,7 @@ as_latency_buckets_init(as_latency_buckets* latency_buckets, uint32_t latency_co
 static as_node_metrics*
 as_node_metrics_init(uint32_t latency_columns, uint32_t latency_shift)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_node_metrics* node_metrics = (as_node_metrics*)cf_malloc(sizeof(as_node_metrics));
 	uint32_t max_latency_type = AS_LATENCY_TYPE_NONE;
 	node_metrics->latency = (as_latency_buckets*)cf_malloc(sizeof(as_latency_buckets) * max_latency_type);
@@ -123,6 +128,7 @@ as_node_metrics_init(uint32_t latency_columns, uint32_t latency_shift)
 void
 as_node_destroy_metrics(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_node_metrics* node_metrics = node->metrics;
 	
 	if (node_metrics) {
@@ -140,6 +146,7 @@ as_node_destroy_metrics(as_node* node)
 as_node*
 as_node_create(as_cluster* cluster, as_node_info* node_info)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_node* node = cf_malloc(sizeof(as_node));
 
 	if (!node) {
@@ -227,6 +234,7 @@ as_node_create(as_cluster* cluster, as_node_info* node_info)
 void
 as_node_destroy(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Close tend connection.
 	if (node->info_socket.fd >= 0) {
 		as_socket_close(&node->info_socket);
@@ -273,6 +281,7 @@ as_node_destroy(as_node* node)
 void
 as_node_create_min_connections(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Create sync connections.
 	uint32_t max = node->cluster->conn_pools_per_node;
 
@@ -298,6 +307,7 @@ as_node_create_min_connections(as_node* node)
 static void
 release_node(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_node_release(node);
 }
 
@@ -318,6 +328,7 @@ release_node(as_node* node)
 void
 as_node_release_delayed(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_gc_item item;
 	item.data = node;
 	item.release_fn = (as_release_fn)release_node;
@@ -327,6 +338,7 @@ as_node_release_delayed(as_node* node)
 void
 as_node_add_address(as_node* node, struct sockaddr* addr)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Add IP address
 	as_address address;
 	as_address_copy_storage(addr, &address.addr);
@@ -359,6 +371,7 @@ as_node_add_address(as_node* node, struct sockaddr* addr)
 void
 as_node_add_alias(as_node* node, const char* hostname, uint16_t port)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_vector* aliases = &node->aliases;
 	as_alias* alias;
 	
@@ -391,6 +404,7 @@ as_node_add_alias(as_node* node, const char* hostname, uint16_t port)
 static int
 as_node_try_connections(as_socket* sock, as_address* addresses, int i, int max, uint64_t deadline_ms)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	while (i < max) {
 		if (as_socket_start_connect(sock, (struct sockaddr*)&addresses[i].addr, deadline_ms)) {
 			return i;
@@ -403,6 +417,7 @@ as_node_try_connections(as_socket* sock, as_address* addresses, int i, int max, 
 static int
 as_node_try_family_connections(as_node* node, int family, int begin, int end, int index, as_address* primary, as_socket* sock, uint64_t deadline_ms)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Create a non-blocking socket.
 	as_tls_context* ctx = as_socket_get_tls_context(node->cluster->tls_ctx);
 	int rv = as_socket_create(sock, family, ctx, node->tls_name);
@@ -445,6 +460,7 @@ as_node_create_socket(
 	as_error* err, as_node* node, as_conn_pool* pool, as_socket* sock, uint64_t deadline_ms
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Try addresses.
 	uint32_t index = node->address_index;
 	as_address* primary = &node->addresses[index];
@@ -491,6 +507,7 @@ as_node_create_connection(
 	as_socket* sock
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint64_t begin = 0;
 
 	if (node->cluster->metrics_enabled) {
@@ -533,6 +550,7 @@ as_node_create_connection(
 static void
 as_node_create_connections(as_node* node, as_conn_pool* pool, uint32_t timeout_ms, int count)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_status status;
 	as_socket sock;
@@ -565,6 +583,7 @@ as_node_create_connections(as_node* node, as_conn_pool* pool, uint32_t timeout_m
 as_status
 as_node_authenticate_connection(as_cluster* cluster, uint64_t deadline_ms)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_node* node = as_node_get_random(cluster);
 
 	if (! node) {
@@ -585,6 +604,7 @@ as_node_authenticate_connection(as_cluster* cluster, uint64_t deadline_ms)
 as_status
 as_node_get_connection(as_error* err, as_node* node, uint32_t socket_timeout, uint64_t deadline_ms, as_socket* sock)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_conn_pool* pools = node->sync_conn_pools;
 	as_cluster* cluster = node->cluster;
 	uint32_t max = cluster->conn_pools_per_node;
@@ -669,6 +689,7 @@ as_node_get_connection(as_error* err, as_node* node, uint32_t socket_timeout, ui
 static void
 as_node_close_idle_connections(as_node* node, as_conn_pool* pool, int count)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint64_t max_socket_idle_ns = as_load_uint64(&node->cluster->max_socket_idle_ns_trim);
 	as_socket s;
 
@@ -691,6 +712,7 @@ as_node_close_idle_connections(as_node* node, as_conn_pool* pool, int count)
 void
 as_node_balance_connections(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_conn_pool* pools = node->sync_conn_pools;
 	as_cluster* cluster = node->cluster;
 	uint32_t max = cluster->conn_pools_per_node;
@@ -712,6 +734,7 @@ as_node_balance_connections(as_node* node)
 void
 as_node_signal_login(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Only login when login not already been requested.
 	if (as_cas_uint8(&node->perform_login, 0, 1)) {
 		// Signal tend thread to wake up from sleep, so node tend will occur faster.
@@ -730,12 +753,14 @@ as_node_signal_login(as_node* node)
 static void
 release_session(as_session* session)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_session_release(session);
 }
 
 static as_status
 as_node_login(as_error* err, as_node* node, as_socket* sock)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_node_info node_info;
 	as_cluster* cluster = node->cluster;
 	uint64_t deadline_ms = as_socket_deadline(cluster->login_timeout_ms);
@@ -765,6 +790,7 @@ as_node_login(as_error* err, as_node* node, as_socket* sock)
 as_status
 as_node_ensure_login_shm(as_error* err, as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (as_load_uint8(&node->perform_login) ||
 		(node->session && node->session->expiration > 0 && cf_getns() >= node->session->expiration)) {
 		as_socket sock;
@@ -792,6 +818,7 @@ as_node_ensure_login_shm(as_error* err, as_node* node)
 static bool
 as_node_should_login(as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Return true if previous user authentication failed or session token expired.
 	return as_load_uint8(&node->perform_login) ||
 		(node->session && node->session->expiration > 0 && cf_getns() >= node->session->expiration);
@@ -800,6 +827,7 @@ as_node_should_login(as_node* node)
 bool
 as_node_has_rack(as_node* node, const char* ns, int rack_id)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_racks* racks = as_racks_load(&node->racks);
 
 	if (! racks) {
@@ -834,6 +862,7 @@ as_node_has_rack(as_node* node, const char* ns, int rack_id)
 static as_status
 as_node_get_tend_connection(as_error* err, as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_cluster* cluster = node->cluster;
 	as_status status = AEROSPIKE_OK;
 
@@ -889,6 +918,7 @@ as_node_get_tend_connection(as_error* err, as_node* node)
 static uint8_t*
 as_node_get_info(as_error* err, as_node* node, const char* names, size_t names_len, uint64_t deadline_ms, uint8_t* stack_buf)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_socket* sock = &node->info_socket;
 	
 	// Prepare the write request buffer.
@@ -953,6 +983,7 @@ as_node_get_info(as_error* err, as_node* node, const char* names, size_t names_l
 static as_status
 as_node_verify_name(as_error* err, as_node* node, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (name == 0 || *name == 0) {
 		return as_error_set_message(err, AEROSPIKE_ERR_CLIENT, "Node name not returned from info request.");
 	}
@@ -969,6 +1000,7 @@ as_node_verify_name(as_error* err, as_node* node, const char* name)
 static void
 as_node_restart(as_cluster* cluster, as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (cluster->max_error_rate > 0) {
 		as_node_reset_error_rate(node);
 	}
@@ -988,6 +1020,7 @@ static as_status
 as_node_process_response(as_cluster* cluster, as_error* err, as_node* node, as_vector* values,
 						 as_peers* peers)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_status status;
 
 	for (uint32_t i = 0; i < values->size; i++) {
@@ -1045,6 +1078,7 @@ as_node_process_response(as_cluster* cluster, as_error* err, as_node* node, as_v
 as_status
 as_node_refresh(as_cluster* cluster, as_error* err, as_node* node, as_peers* peers)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_status status = as_node_get_tend_connection(err, node);
 	
 	if (status != AEROSPIKE_OK) {
@@ -1113,6 +1147,7 @@ static const char INFO_STR_PEERS_CLEAR_STD[] = "peers-clear-std\n";
 static as_status
 as_node_process_peers(as_cluster* cluster, as_error* err, as_node* node, as_vector* values, as_peers* peers)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	for (uint32_t i = 0; i < values->size; i++) {
 		as_name_value* nv = as_vector_get(values, i);
 		
@@ -1137,6 +1172,7 @@ as_node_process_peers(as_cluster* cluster, as_error* err, as_node* node, as_vect
 as_status
 as_node_refresh_peers(as_cluster* cluster, as_error* err, as_node* node, as_peers* peers)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_log_debug("Update peers for node %s", as_node_get_address_string(node));
 
 	uint64_t deadline_ms = as_socket_deadline(cluster->conn_timeout_ms);
@@ -1195,6 +1231,7 @@ static const char INFO_STR_GET_REPLICAS_REGIME[] = "partition-generation\nreplic
 static as_status
 as_node_process_partitions(as_cluster* cluster, as_error* err, as_node* node, as_vector* values)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	for (uint32_t i = 0; i < values->size; i++) {
 		as_name_value* nv = as_vector_get(values, i);
 		
@@ -1214,6 +1251,7 @@ as_node_process_partitions(as_cluster* cluster, as_error* err, as_node* node, as
 as_status
 as_node_refresh_partitions(as_cluster* cluster, as_error* err, as_node* node, as_peers* peers)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_log_debug("Update partition map for node %s", as_node_get_address_string(node));
 
 	uint64_t deadline_ms = as_socket_deadline(cluster->conn_timeout_ms);
@@ -1249,12 +1287,14 @@ as_node_refresh_partitions(as_cluster* cluster, as_error* err, as_node* node, as
 static void
 release_racks(as_racks* racks)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_racks_release(racks);
 }
 
 static void
 as_node_replace_racks(as_cluster* cluster, as_node* node, as_racks* racks)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	racks->ref_count = 1;
 	racks->pad = 0;
 
@@ -1278,6 +1318,7 @@ as_node_replace_racks(as_cluster* cluster, as_node* node, as_racks* racks)
 static as_status
 as_node_parse_racks(as_cluster* cluster, as_error* err, as_node* node, char* buf)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Use destructive parsing (ie modifying input buffer with null termination) for performance.
 	// Receive format: <ns1>:<rack1>;<ns2>:<rack2>...\n
 
@@ -1370,6 +1411,7 @@ as_node_parse_racks(as_cluster* cluster, as_error* err, as_node* node, char* buf
 static uint32_t
 as_latency_buckets_get_index(as_latency_buckets* latency_buckets, uint64_t elapsed_nanos)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Convert nanoseconds to milliseconds.
 	uint64_t elapsed = elapsed_nanos / NS_TO_MS;
 
@@ -1393,6 +1435,7 @@ as_latency_buckets_get_index(as_latency_buckets* latency_buckets, uint64_t elaps
 void
 as_node_add_latency(as_node* node, as_latency_type latency_type, uint64_t elapsed)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_latency_buckets* latency_buckets = &node->metrics->latency[latency_type];
 	uint32_t index = as_latency_buckets_get_index(latency_buckets, elapsed);
 	as_incr_uint64(&latency_buckets->buckets[index]);
@@ -1401,12 +1444,14 @@ as_node_add_latency(as_node* node, as_latency_type latency_type, uint64_t elapse
 void
 as_node_enable_metrics(as_node* node, const as_metrics_policy* policy)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	 node->metrics = as_node_metrics_init(policy->latency_columns, policy->latency_shift);
 }
 
 static as_status
 as_node_process_racks(as_cluster* cluster, as_error* err, as_node* node, as_vector* values)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	for (uint32_t i = 0; i < values->size; i++) {
 		as_name_value* nv = as_vector_get(values, i);
 
@@ -1435,6 +1480,7 @@ static const char INFO_STR_GET_RACKS[] = "rebalance-generation\nrack-ids\n";
 as_status
 as_node_refresh_racks(as_cluster* cluster, as_error* err, as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_log_debug("Update racks for node %s", as_node_get_address_string(node));
 
 	uint64_t deadline_ms = as_socket_deadline(cluster->conn_timeout_ms);

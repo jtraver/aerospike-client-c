@@ -53,6 +53,7 @@ as_config_destroy(as_config* config);
 static aerospike*
 aerospike_defaults(aerospike* as, bool free, as_config* config)
 {
+    fprintf(stderr, "aerospike.aerospike_defaults\n");
 	as->_free = free;
 	as->cluster = NULL;
 
@@ -72,6 +73,7 @@ aerospike_defaults(aerospike* as, bool free, as_config* config)
 as_status
 aerospike_library_init(as_error* err)
 {
+    fprintf(stderr, "aerospike.aerospike_library_init\n");
 #if defined(_MSC_VER) || defined(AS_USE_LIBEVENT)
 	pthread_mutex_lock(&init_lock);
 
@@ -114,6 +116,7 @@ aerospike_library_init(as_error* err)
 aerospike*
 aerospike_init(aerospike* as, as_config* config)
 {
+    fprintf(stderr, "aerospike.aerospike_init\n");
 	return aerospike_defaults(as, false, config);
 }
 
@@ -124,6 +127,7 @@ aerospike_init(aerospike* as, as_config* config)
 aerospike*
 aerospike_new(as_config* config)
 {
+    fprintf(stderr, "aerospike.aerospike_new\n");
 	aerospike* as = cf_malloc(sizeof(aerospike));
 
 	if (!as) {
@@ -139,6 +143,7 @@ aerospike_new(as_config* config)
 void
 aerospike_init_lua(as_config_lua* config)
 {
+    fprintf(stderr, "aerospike.aerospike_init_lua\n");
     mod_lua_config lua = {
         .server_mode    = false,
         .cache_enabled  = config->cache_enabled,
@@ -155,6 +160,7 @@ aerospike_init_lua(as_config_lua* config)
  */
 void aerospike_destroy(aerospike* as)
 {
+    fprintf(stderr, "aerospike.aerospike_destroy\n");
 	as_config_destroy(&as->config);
 
 	if (as->_free) {
@@ -168,6 +174,7 @@ void aerospike_destroy(aerospike* as)
 as_status
 aerospike_connect(aerospike* as, as_error* err)
 {
+    fprintf(stderr, "aerospike.aerospike_connect\n");
 	// Disable log subscribe requirement to avoid a breaking change in a minor release.
 	// TODO: Reintroduce requirement in the next major client release.
 	/*
@@ -245,6 +252,7 @@ void as_event_close_cluster(as_cluster* cluster);
 as_status
 aerospike_close(aerospike* as, as_error* err)
 {
+    fprintf(stderr, "aerospike.aerospike_close\n");
 	// This is not 100% bulletproof against simultaneous aerospike_close() calls
 	// from different threads.
 	as_error_reset(err);
@@ -276,6 +284,7 @@ aerospike_close(aerospike* as, as_error* err)
 bool
 aerospike_cluster_is_connected(aerospike* as)
 {
+    fprintf(stderr, "aerospike.aerospike_cluster_is_connected\n");
 	return as_cluster_is_connected(as->cluster);
 }
 
@@ -284,6 +293,7 @@ extern bool as_socket_stop_on_interrupt;
 void
 aerospike_stop_on_interrupt(bool stop)
 {
+    fprintf(stderr, "aerospike.aerospike_stop_on_interrupt\n");
 	as_socket_stop_on_interrupt = stop;
 }
 
@@ -293,6 +303,12 @@ aerospike_truncate(
 	uint64_t before_nanos
 	)
 {
+	if (set) {
+        fprintf(stderr, "aerospike.aerospike_truncate: ns = %s, set = %s\n", ns, set);
+	}
+	else {
+        fprintf(stderr, "aerospike.aerospike_truncate: ns = %s, set = %s\n", ns, "null");
+	}
 	as_error_reset(err);
 
 	if (! policy) {
@@ -345,6 +361,7 @@ aerospike_truncate(
 as_status
 aerospike_reload_tls_config(aerospike* as, as_error* err)
 {
+    fprintf(stderr, "aerospike.aerospike_reload_tls_config\n");
 	as_error_reset(err);
 	return as_tls_config_reload(&as->config.tls, as->cluster->tls_ctx, err);
 }
@@ -354,6 +371,7 @@ aerospike_set_xdr_filter(
 	aerospike* as, as_error* err, as_policy_info* policy, const char* dc, const char* ns,
 	const char* filter_b64)
 {
+    fprintf(stderr, "aerospike.aerospike_set_xdr_filter\n");
 	as_error_reset(err);
 
 	if (! policy) {

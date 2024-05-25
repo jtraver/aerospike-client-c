@@ -32,12 +32,14 @@ as_query_get_info_timeout(as_event_executor* executor);
 static inline void
 as_write_cluster_stable(char* cmd, size_t size, const char* ns)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	snprintf(cmd, size, "cluster-stable:namespace=%s\n", ns);
 }
 
 static inline as_status
 as_parse_error(as_error* err, const char* response)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_error_update(err, AEROSPIKE_ERR_CLIENT,
 						   "Failed to parse cluster-stable results: %s", response);
 }
@@ -45,6 +47,7 @@ as_parse_error(as_error* err, const char* response)
 static inline as_status
 as_cluster_key_error(as_error* err, uint64_t expected_key, uint64_t cluster_key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_error_update(err, AEROSPIKE_ERR_CLUSTER_CHANGE,
 						   "Cluster is in migration: %" PRIu64 ", %" PRIu64,
 						   expected_key, cluster_key);
@@ -53,6 +56,7 @@ as_cluster_key_error(as_error* err, uint64_t expected_key, uint64_t cluster_key)
 static bool
 as_parse_cluster_key(char* response, uint64_t* cluster_key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	char* value = NULL;
 	as_status status = as_info_parse_single_response(response, &value);
 
@@ -72,6 +76,7 @@ as_parse_cluster_key(char* response, uint64_t* cluster_key)
 static void
 as_validate_begin_listener(as_error* err, char* response, void* udata, as_event_loop* event_loop)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_event_command* cmd = udata;
 	as_event_executor* executor = cmd->udata;
 
@@ -109,6 +114,7 @@ as_validate_begin_listener(as_error* err, char* response, void* udata, as_event_
 static void
 as_validate_next_listener(as_error* err, char* response, void* udata, as_event_loop* event_loop)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_event_command* cmd = udata;
 	as_event_executor* executor = cmd->udata;
 
@@ -146,6 +152,7 @@ as_validate_next_listener(as_error* err, char* response, void* udata, as_event_l
 static void
 as_validate_end_listener(as_error* err, char* response, void* udata, as_event_loop* event_loop)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_event_executor* executor = udata;
 
 	if (err) {
@@ -181,6 +188,7 @@ as_query_validate_begin(
 	as_error* err, as_node* node, const char* ns, uint32_t timeout, uint64_t* cluster_key
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	char cmd[256];
 	as_write_cluster_stable(cmd, sizeof(cmd), ns);
 
@@ -207,6 +215,7 @@ as_query_validate(
 	as_error* err, as_node* node, const char* ns, uint32_t timeout, uint64_t expected_key
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (expected_key == 0) {
 		return AEROSPIKE_OK;
 	}
@@ -228,6 +237,7 @@ as_query_validate(
 as_status
 as_query_validate_begin_async(as_event_executor* executor, const char* ns, as_error* err)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_policy_info policy;
 	as_policy_info_init(&policy);
 	policy.timeout = as_query_get_info_timeout(executor);
@@ -257,6 +267,7 @@ as_query_validate_begin_async(as_event_executor* executor, const char* ns, as_er
 as_status
 as_query_validate_next_async(as_event_executor* executor, uint32_t index)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_policy_info policy;
 	as_policy_info_init(&policy);
@@ -287,6 +298,7 @@ as_query_validate_next_async(as_event_executor* executor, uint32_t index)
 void
 as_query_validate_end_async(as_event_executor* executor, as_node* node, as_event_loop* event_loop)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_policy_info policy;
 	as_policy_info_init(&policy);

@@ -36,6 +36,7 @@
 static inline as_record_iterator*
 as_record_iterator_cons(as_record_iterator* iterator, const as_record* record, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( ! ( iterator && record ) ) return NULL;
 	iterator->_free = free;
 	iterator->record = record;
@@ -50,6 +51,7 @@ as_record_iterator_cons(as_record_iterator* iterator, const as_record* record, b
 as_record_iterator*
 as_record_iterator_new(const as_record* record)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_record_iterator* iterator = (as_record_iterator *) cf_malloc(sizeof(as_record_iterator));
 	return as_record_iterator_cons(iterator, record, true);
 }
@@ -57,12 +59,14 @@ as_record_iterator_new(const as_record* record)
 as_record_iterator*
 as_record_iterator_init(as_record_iterator* iterator, const as_record* record)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_record_iterator_cons(iterator, record, false);
 }
 
 void
 as_record_iterator_destroy(as_record_iterator* iterator)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	iterator->record = NULL;
 	iterator->pos = 0;
 
@@ -74,12 +78,14 @@ as_record_iterator_destroy(as_record_iterator* iterator)
 bool
 as_record_iterator_has_next(const as_record_iterator* iterator)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return iterator && iterator->record && iterator->record->bins.size > iterator->pos ? true : false;
 }
 
 as_bin*
 as_record_iterator_next(as_record_iterator* iterator)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return iterator && 
 		iterator->record && 
 		iterator->record->bins.size > iterator->pos ? 

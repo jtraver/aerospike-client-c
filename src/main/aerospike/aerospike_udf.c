@@ -46,6 +46,7 @@ char* as_udf_type_str[] = {"LUA", 0};
 static void
 as_udf_parse_file(const char* token, char* p, as_udf_file_ptr* ptr)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (strcmp(token, "filename") == 0) {
 		ptr->name = p;
 		return;
@@ -67,6 +68,7 @@ aerospike_udf_list(
 	aerospike* as, as_error* err, const as_policy_info* policy, as_udf_files* files
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error_reset(err);
 	
 	if (! policy) {
@@ -168,6 +170,7 @@ aerospike_udf_get(
 	const char* filename, as_udf_type type, as_udf_file * file
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error_reset(err);
 	
 	if (! policy) {
@@ -257,6 +260,7 @@ aerospike_udf_put(
 	const char* filename, as_udf_type type, as_bytes* content
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (type != AS_UDF_TYPE_LUA) {
 		return as_error_update(err, AEROSPIKE_ERR_PARAM, "Invalid udf type: %d", type);
 	}
@@ -304,6 +308,7 @@ aerospike_udf_put(
 static bool
 aerospike_udf_put_is_done(aerospike* as, as_error* err, const as_policy_info* policy, char* filter)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Query all nodes for task completion status.
 	as_nodes* nodes = as_nodes_reserve(as->cluster);
 	
@@ -342,6 +347,7 @@ aerospike_udf_put_wait(
 	const char* filename, uint32_t interval_ms
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! policy) {
 		policy = &as->config.policies.info;
 	}
@@ -368,6 +374,7 @@ aerospike_udf_remove(
 	aerospike* as, as_error* err, const as_policy_info* policy, const char* filename
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error_reset(err);
 	
 	if (! policy) {
@@ -391,6 +398,7 @@ aerospike_udf_remove(
 static bool
 aerospike_udf_remove_is_done(aerospike* as, as_error* err, const as_policy_info* policy, char* filter)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Query all nodes for task completion status.
 	bool done = true;
 	as_nodes* nodes = as_nodes_reserve(as->cluster);
@@ -420,6 +428,7 @@ aerospike_udf_remove_wait(
 	const char* filename, uint32_t interval_ms
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! policy) {
 		policy = &as->config.policies.info;
 	}

@@ -34,6 +34,7 @@ as_key_cons(
 	const as_digest_value digest
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (as_strncpy(key->ns, ns, AS_NAMESPACE_MAX_SIZE)) {
 		// Truncation occurred.
 		return NULL;
@@ -65,12 +66,14 @@ as_key_cons(
 as_key*
 as_key_init(as_key* key, const char* ns, const char* set, const char* value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_key_init_str(key, ns, set, value);
 }
 
 as_key*
 as_key_init_int64(as_key* key, const char* ns, const char* set, int64_t value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! key) {
 		return key;
 	}
@@ -81,6 +84,7 @@ as_key_init_int64(as_key* key, const char* ns, const char* set, int64_t value)
 as_key*
 as_key_init_strp(as_key* key, const char* ns, const char* set, const char* value, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! key) {
 		return key;
 	}
@@ -91,6 +95,7 @@ as_key_init_strp(as_key* key, const char* ns, const char* set, const char* value
 as_key*
 as_key_init_rawp(as_key* key, const char* ns, const char* set, const uint8_t* value, uint32_t size, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! key) {
 		return key;
 	}
@@ -101,6 +106,7 @@ as_key_init_rawp(as_key* key, const char* ns, const char* set, const uint8_t* va
 as_key*
 as_key_init_digest(as_key* key, const char* ns, const char* set, const as_digest_value digest)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! key) {
 		return key;
 	}
@@ -110,6 +116,7 @@ as_key_init_digest(as_key* key, const char* ns, const char* set, const as_digest
 as_key*
 as_key_init_value(as_key* key, const char* ns, const char* set, const as_key_value* value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! key) {
 		return key;
 	}
@@ -119,12 +126,14 @@ as_key_init_value(as_key* key, const char* ns, const char* set, const as_key_val
 as_key*
 as_key_new(const char* ns, const char* set, const char* value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return as_key_new_str(ns, set, value);
 }
 
 as_key*
 as_key_new_int64(const char* ns, const char* set, int64_t value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key* key = (as_key*)cf_malloc(sizeof(as_key));
 
 	if (! key) {
@@ -143,6 +152,7 @@ as_key_new_int64(const char* ns, const char* set, int64_t value)
 as_key*
 as_key_new_strp(const char* ns, const char* set, const char* value, bool do_free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key* key = (as_key*)cf_malloc(sizeof(as_key));
 
 	if (! key) {
@@ -161,6 +171,7 @@ as_key_new_strp(const char* ns, const char* set, const char* value, bool do_free
 as_key*
 as_key_new_rawp(const char* ns, const char* set, const uint8_t* value, uint32_t size, bool do_free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key* key = (as_key*)cf_malloc(sizeof(as_key));
 
 	if (! key) {
@@ -179,6 +190,7 @@ as_key_new_rawp(const char* ns, const char* set, const uint8_t* value, uint32_t 
 as_key*
 as_key_new_digest(const char* ns, const char* set, const as_digest_value digest)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key* key = (as_key*)cf_malloc(sizeof(as_key));
 
 	if (! key) {
@@ -195,6 +207,7 @@ as_key_new_digest(const char* ns, const char* set, const as_digest_value digest)
 as_key*
 as_key_new_value(const char* ns, const char* set, const as_key_value* value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_key* key = (as_key*)cf_malloc(sizeof(as_key));
 
 	if (! key) {
@@ -211,6 +224,7 @@ as_key_new_value(const char* ns, const char* set, const as_key_value* value)
 void
 as_key_destroy(as_key* key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! key) {
 		return;
 	}
@@ -225,6 +239,7 @@ as_key_destroy(as_key* key)
 as_digest*
 as_key_digest(as_key* key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_status status = as_key_set_digest(&err, key);
 	
@@ -240,6 +255,7 @@ as_key_digest(as_key* key)
 as_status
 as_key_set_digest(as_error* err, as_key* key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (key->digest.init) {
 		return AEROSPIKE_OK;
 	}

@@ -48,6 +48,7 @@ static uint32_t g_replica_rr = 0;
 uint8_t
 as_replica_index_any(void)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint32_t seq = as_faa_uint32(&g_replica_rr, 1);
 	return (uint8_t)(seq % AS_MAX_REPLICATION_FACTOR);
 }
@@ -64,6 +65,7 @@ as_batch_retry(as_command* cmd, as_error* err);
 size_t
 as_command_user_key_size(const as_key* key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	size_t size = AS_FIELD_HEADER_SIZE + 1;  // Add 1 for key's value type.
 	as_val* val = (as_val*)key->valuep;
 	
@@ -101,6 +103,7 @@ as_command_user_key_size(const as_key* key)
 size_t
 as_command_key_size(as_policy_key policy, const as_key* key, uint16_t* n_fields)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	*n_fields = 3;
 	size_t size = strlen(key->ns) + strlen(key->set) + sizeof(cf_digest) + 45;
 	
@@ -114,6 +117,7 @@ as_command_key_size(as_policy_key policy, const as_key* key, uint16_t* n_fields)
 as_status
 as_command_bin_size(const as_bin* bin, as_queue* buffers, size_t* sizep, as_error* err)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	size_t size = *sizep + strlen(bin->name) + 8;
 	as_val* val = (as_val*)bin->valuep;
 
@@ -189,6 +193,7 @@ as_command_write_header_write(
 	uint8_t info_attr
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	switch (exists) {
 		default:
 		case AS_POLICY_EXISTS_IGNORE:
@@ -263,6 +268,7 @@ as_command_write_header_read(
 	uint16_t n_bins, uint8_t read_attr, uint8_t write_attr, uint8_t info_attr
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_command_set_attr_read(read_mode_ap, read_mode_sc, policy->compress, &read_attr,
 							 &info_attr);
 
@@ -285,6 +291,7 @@ as_command_write_header_read_header(
 	uint8_t read_attr
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t info_attr = 0;
 	as_command_set_attr_read_header(read_mode_ap, read_mode_sc, &read_attr, &info_attr);
 
@@ -304,6 +311,7 @@ as_command_write_header_read_header(
 uint8_t*
 as_command_write_user_key(uint8_t* begin, const as_key* key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t* p = begin + AS_FIELD_HEADER_SIZE;
 	as_val* val = (as_val*)key->valuep;
 	uint32_t len;
@@ -360,6 +368,7 @@ as_command_write_user_key(uint8_t* begin, const as_key* key)
 uint8_t*
 as_command_write_key(uint8_t* p, as_policy_key policy, const as_key* key)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	p = as_command_write_field_string(p, AS_FIELD_NAMESPACE, key->ns);
 	p = as_command_write_field_string(p, AS_FIELD_SETNAME, key->set);
 	p = as_command_write_field_digest(p, &key->digest);
@@ -373,6 +382,7 @@ as_command_write_key(uint8_t* p, as_policy_key policy, const as_key* key)
 uint8_t*
 as_command_write_bin_name(uint8_t* cmd, const char* name)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t* p = cmd + AS_OPERATION_HEADER_SIZE;
 	
 	// Copy string, but do not transfer null byte.
@@ -392,6 +402,7 @@ as_command_write_bin_name(uint8_t* cmd, const char* name)
 uint8_t*
 as_command_write_bin(uint8_t* begin, as_operator op_type, const as_bin* bin, as_queue* buffers)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t* p = begin + AS_OPERATION_HEADER_SIZE;
 	const char* name = bin->name;
 
@@ -524,12 +535,14 @@ WriteFieldHeader:
 size_t
 as_command_compress_max_size(size_t cmd_sz)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	return compressBound((uLong)cmd_sz) + sizeof(as_compressed_proto);
 }
 
 as_status
 as_command_compress(as_error* err, uint8_t* cmd, size_t cmd_sz, uint8_t* compressed_cmd, size_t* compressed_size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	*compressed_size -= sizeof(as_compressed_proto);
 	int ret_val = compress2(compressed_cmd + sizeof(as_compressed_proto), (uLongf*)compressed_size,
 							cmd, (uLong)cmd_sz, Z_BEST_SPEED);
@@ -552,6 +565,7 @@ as_command_send(
 	as_command* cmd, as_error* err, uint32_t comp_threshold, as_write_fn write_fn, void* udata
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	size_t capacity = cmd->buf_size;
 	cmd->buf = as_command_buffer_init(capacity);
 	cmd->buf_size = write_fn(udata, cmd->buf);
@@ -583,6 +597,7 @@ as_command_send(
 static inline bool
 is_server_timeout(as_error* err)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Server timeouts have a message.  Client timeouts do not have a message.
 	return err->message[0];
 }
@@ -590,6 +605,7 @@ is_server_timeout(as_error* err)
 as_status
 as_command_execute(as_command* cmd, as_error* err)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_node* node = NULL;
 	as_status status;
 	bool release_node;
@@ -827,6 +843,7 @@ Retry:
 static as_status
 as_command_read_messages(as_error* err, as_command* cmd, as_socket* sock, as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	size_t capacity = 0;
 	uint8_t* buf = NULL;
 	size_t size;
@@ -917,6 +934,7 @@ as_command_read_messages(as_error* err, as_command* cmd, as_socket* sock, as_nod
 static as_status
 as_command_read_message(as_error* err, as_command* cmd, as_socket* sock, as_node* node)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_proto proto;
 	as_status status = as_socket_read_deadline(err, sock, node, (uint8_t*)&proto, sizeof(as_proto),
 											   cmd->socket_timeout, cmd->deadline_ms);
@@ -981,6 +999,7 @@ as_command_read_message(as_error* err, as_command* cmd, as_socket* sock, as_node
 as_status
 as_command_parse_header(as_error* err, as_command* cmd, as_node* node, uint8_t* buf, size_t size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_msg* msg = (as_msg*)buf;
 	as_status status = as_msg_parse(err, msg, size);
 
@@ -1010,6 +1029,7 @@ as_command_parse_header(as_error* err, as_command* cmd, as_node* node, uint8_t* 
 static int
 as_command_bytes_to_int(uint8_t	*buf, int sz, int64_t *value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (sz == 8) {
 		// No need to worry about sign extension
 		*value = cf_swap_from_be64(*(uint64_t *)buf);
@@ -1058,6 +1078,7 @@ as_command_bytes_to_int(uint8_t	*buf, int sz, int64_t *value)
 uint8_t*
 as_command_ignore_fields(uint8_t* p, uint32_t n_fields)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	for (uint32_t i = 0; i < n_fields; i++) {
 		p += cf_swap_from_be32(*(uint32_t*)p) + 4;
 	}
@@ -1067,6 +1088,7 @@ as_command_ignore_fields(uint8_t* p, uint32_t n_fields)
 uint8_t*
 as_command_ignore_bins(uint8_t* p, uint32_t n_bins)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	for (uint32_t i = 0; i < n_bins; i++) {
 		p += cf_swap_from_be32(*(uint32_t*)p) + 4;
 	}
@@ -1076,6 +1098,7 @@ as_command_ignore_bins(uint8_t* p, uint32_t n_bins)
 uint8_t*
 as_command_parse_key(uint8_t* p, uint32_t n_fields, as_key* key, uint64_t* bval)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint32_t len;
 	uint32_t size;
 	
@@ -1155,6 +1178,7 @@ as_command_parse_key(uint8_t* p, uint32_t n_fields, as_key* key, uint64_t* bval)
 static void
 as_command_parse_value(uint8_t* p, uint8_t type, uint32_t value_size, as_val** value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Allocate values on heap.
 	switch (type) {
 		case AS_BYTES_UNDEF: {
@@ -1237,6 +1261,7 @@ as_command_parse_value(uint8_t* p, uint8_t type, uint32_t value_size, as_val** v
 as_status
 as_command_parse_success_failure_bins(uint8_t** pp, as_error* err, as_msg* msg, as_val** value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t* p = *pp;
 	p = as_command_ignore_fields(p, msg->n_fields);
 		
@@ -1288,6 +1313,7 @@ as_command_parse_success_failure_bins(uint8_t** pp, as_error* err, as_msg* msg, 
 static as_status
 as_command_parse_udf_error(as_error* err, as_status status, as_val* val)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (val && val->type == AS_STRING) {
 		char* begin = ((as_string*)val)->value;
 		char* p = strrchr(begin, ':');
@@ -1311,6 +1337,7 @@ as_command_parse_udf_error(as_error* err, as_status status, as_val* val)
 as_status
 as_command_parse_udf_failure(uint8_t* p, as_error* err, as_msg* msg, as_status status)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	p = as_command_ignore_fields(p, msg->n_fields);
 	
 	as_bin_name name;
@@ -1344,6 +1371,7 @@ as_command_parse_udf_failure(uint8_t* p, as_error* err, as_msg* msg, as_status s
 static as_status
 abort_record_memory(as_error* err, as_record* rec, size_t size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Bin values prior to failure will be destroyed later when entire record is destroyed.
 	return as_error_update(err, AEROSPIKE_ERR_CLIENT, "malloc failure: %zu", size);
 }
@@ -1351,6 +1379,7 @@ abort_record_memory(as_error* err, as_record* rec, size_t size)
 as_status
 as_command_parse_bins(uint8_t** pp, as_error* err, as_record* rec, uint32_t n_bins, bool deserialize)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t* p = *pp;
 	as_bin* bin = rec->bins.entries;
 
@@ -1491,6 +1520,7 @@ as_command_parse_bins(uint8_t** pp, as_error* err, as_record* rec, uint32_t n_bi
 as_status
 as_command_parse_result(as_error* err, as_command* cmd, as_node* node, uint8_t* buf, size_t size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_command_parse_result_data* data = cmd->udata;
 	as_msg* msg = (as_msg*)buf;
 	as_status status = as_msg_parse(err, msg, size);
@@ -1563,6 +1593,7 @@ as_command_parse_success_failure(
 	as_error* err, as_command* cmd, as_node* node, uint8_t* buf, size_t size
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_val** val = cmd->udata;
 	as_msg* msg = (as_msg*)buf;
 	as_status status = as_msg_parse(err, msg, size);

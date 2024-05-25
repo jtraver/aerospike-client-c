@@ -20,6 +20,7 @@
 #include <citrusleaf/alloc.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 /******************************************************************************
  * UDF CALL FUNCTIONS
@@ -31,6 +32,7 @@ as_udf_call_defaults(
 	const as_udf_function_name function, as_list* arglist
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !call ) return call;
 
 	call->_free = free;
@@ -57,6 +59,7 @@ as_udf_call_init(
 	as_list* arglist
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( ( module && strlen(module) > AS_UDF_MODULE_MAX_LEN ) ||
 		 ( function && strlen(function) > AS_UDF_FUNCTION_MAX_LEN ) ) {
 		return NULL;
@@ -69,6 +72,7 @@ as_udf_call_new(
 	const as_udf_module_name module, const as_udf_function_name function, as_list* arglist
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( ( module && strlen(module) > AS_UDF_MODULE_MAX_LEN ) ||
 		 ( function && strlen(function) > AS_UDF_FUNCTION_MAX_LEN ) ) {
 		return NULL;
@@ -80,6 +84,7 @@ as_udf_call_new(
 void
 as_udf_call_destroy(as_udf_call* call)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( call ) {
 		call->module[0] = '\0';
 		call->function[0] = '\0';
@@ -102,6 +107,7 @@ as_udf_call_destroy(as_udf_call* call)
 static as_udf_file*
 as_udf_file_defaults(as_udf_file * file, bool free)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	file->_free = free;
 	file->name[0] = '\0';
 	memset(file->hash, 0, AS_UDF_FILE_HASH_SIZE);
@@ -115,6 +121,7 @@ as_udf_file_defaults(as_udf_file * file, bool free)
 as_udf_file*
 as_udf_file_init(as_udf_file * file)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !file ) return file;
 	return as_udf_file_defaults(file, false);
 }
@@ -122,6 +129,7 @@ as_udf_file_init(as_udf_file * file)
 as_udf_file*
 as_udf_file_new()
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_udf_file * file = (as_udf_file *) cf_malloc(sizeof(as_udf_file));
 	if ( !file ) return file;
 	return as_udf_file_defaults(file, true);
@@ -130,6 +138,7 @@ as_udf_file_new()
 void
 as_udf_file_destroy(as_udf_file * file)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( file ) {
 		if ( file->content.bytes && file->content._free ) {
 			cf_free(file->content.bytes);
@@ -151,6 +160,7 @@ as_udf_file_destroy(as_udf_file * file)
 as_udf_files*
 as_udf_files_defaults(as_udf_files* files, bool free, uint32_t capacity)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !files ) return files;
 	
 	files->_free = free;
@@ -170,6 +180,7 @@ as_udf_files_defaults(as_udf_files* files, bool free, uint32_t capacity)
 as_udf_files*
 as_udf_files_init(as_udf_files* files, uint32_t capacity)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !files ) return files;
 	return as_udf_files_defaults(files, false, capacity);
 }
@@ -177,6 +188,7 @@ as_udf_files_init(as_udf_files* files, uint32_t capacity)
 as_udf_files*
 as_udf_files_new(uint32_t capacity)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_udf_files* files = (as_udf_files *) cf_malloc(sizeof(as_udf_files));
 	if ( !files ) return files;
 	return as_udf_files_defaults(files, true, capacity);
@@ -185,6 +197,7 @@ as_udf_files_new(uint32_t capacity)
 void
 as_udf_files_destroy(as_udf_files* files)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( files ) {
 
 		// entries is malloced in both init and new

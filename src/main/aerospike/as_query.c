@@ -32,6 +32,7 @@
 static as_query*
 as_query_defaults(as_query* query, bool free, const char* ns, const char* set)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	query->_free = free;
 
 	as_strncpy(query->ns, ns, AS_NAMESPACE_MAX_SIZE);
@@ -64,6 +65,7 @@ as_query_defaults(as_query* query, bool free, const char* ns, const char* set)
 as_query*
 as_query_init(as_query* query, const char* ns, const char* set)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !query ) return query;
 	return as_query_defaults(query, false, ns, set);
 }
@@ -71,6 +73,7 @@ as_query_init(as_query* query, const char* ns, const char* set)
 as_query*
 as_query_new(const char* ns, const char* set)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_query* query = (as_query *) cf_malloc(sizeof(as_query));
 	if ( !query ) return query;
 	return as_query_defaults(query, true, ns, set);
@@ -79,6 +82,7 @@ as_query_new(const char* ns, const char* set)
 void
 as_query_destroy(as_query* query)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (!query) {
 		return;
 	}
@@ -152,6 +156,7 @@ as_query_destroy(as_query* query)
 bool
 as_query_select_init(as_query* query, uint16_t n)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !query ) return false;
 	if ( query->select.entries ) return false;
 
@@ -168,6 +173,7 @@ as_query_select_init(as_query* query, uint16_t n)
 bool
 as_query_select(as_query* query, const char * bin)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// test preconditions
 	if ( !query || !bin || strlen(bin) >= AS_BIN_NAME_MAX_SIZE ) {
 		return false;
@@ -189,6 +195,7 @@ as_query_select(as_query* query, const char * bin)
 bool
 as_query_where_init(as_query* query, uint16_t n)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !query ) return false;
 	if ( query->where.entries ) return false;
 
@@ -208,6 +215,7 @@ as_query_where_internal(
 	as_index_datatype dtype, va_list ap
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// test preconditions
 	if (! query || !bin || strlen(bin) >= AS_BIN_NAME_MAX_SIZE) {
 		return false;
@@ -288,6 +296,7 @@ as_query_where(
 	as_index_datatype dtype, ...
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	va_list ap;
 	va_start(ap, dtype);
 
@@ -303,6 +312,7 @@ as_query_where_with_ctx(
 	as_index_type itype, as_index_datatype dtype, ...
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	va_list ap;
 	va_start(ap, dtype);
 
@@ -319,6 +329,7 @@ as_query_where_with_ctx(
 bool
 as_query_apply(as_query* query, const char* module, const char* function, const as_list* arglist)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( !query ) return false;
 	as_udf_call_init(&query->apply, module, function, (as_list *) arglist);
 	return true;
@@ -331,6 +342,7 @@ as_query_apply(as_query* query, const char* module, const char* function, const 
 bool
 as_query_to_bytes(const as_query* query, uint8_t** bytes, uint32_t* bytes_size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_packer pk = as_cdt_begin();
 	as_pack_string(&pk, query->ns);
 	as_pack_string(&pk, query->set);
@@ -479,6 +491,7 @@ HandleError:
 bool
 as_query_from_bytes(as_query* query, const uint8_t* bytes, uint32_t bytes_size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Initialize query so it can be safely destroyed if a failure occurs.
 	// Assume query passed on the stack.
 	as_query_defaults(query, false, "", "");
@@ -865,6 +878,7 @@ HandleError:
 as_query*
 as_query_from_bytes_new(const uint8_t* bytes, uint32_t bytes_size)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_query* query = (as_query*)cf_malloc(sizeof(as_query));
 
 	if (! as_query_from_bytes(query, bytes, bytes_size)) {

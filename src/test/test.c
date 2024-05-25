@@ -33,6 +33,7 @@
  *****************************************************************************/
 
 atf_test_result * atf_test_run(atf_test * test) {
+    fprintf(stderr, "test.atf_test_run: TEST %s\n", test->name);
     atf_test_result * result = atf_test_result_new(test);
     test->run(test, result);
     return result;
@@ -69,11 +70,13 @@ atf_suite * atf_suite_add(atf_suite * suite, atf_test * test) {
 }
 
 atf_suite * atf_suite_before(atf_suite * suite, bool (* before)(atf_suite * suite)) {
+    fprintf(stderr, "test.atf_suite_before\n");
     suite->before = before;
     return suite;
 }
 
 atf_suite * atf_suite_after(atf_suite * suite, bool (* after)(atf_suite * suite)) {
+    fprintf(stderr, "test.atf_suite_after\n");
     suite->after = after;
     return suite;
 }
@@ -83,6 +86,7 @@ uint32_t atf_suite_size(atf_suite * suite) {
 }
 
 atf_suite_result * atf_suite_run(atf_suite * suite) {
+    fprintf(stderr, "test.atf_suite_run: SUITE %s\n", suite->name);
 
     if ( suite->init ) suite->init(suite);
 
@@ -185,17 +189,20 @@ atf_plan_result * atf_plan_result_add(atf_plan_result * plan_result, atf_suite_r
 }
 
 atf_plan * atf_plan_before(atf_plan * plan, bool (* before)(atf_plan * plan)) {
+    fprintf(stderr, "test.atf_plan_before\n");
     plan->before = before;
     return plan;
 }
 
 atf_plan * atf_plan_after(atf_plan * plan, bool (* after)(atf_plan * plan)) {
+    fprintf(stderr, "test.atf_plan_after\n");
     plan->after = after;
     return plan;
 }
 
 
 int atf_plan_run(atf_plan * plan, atf_plan_result * result) {
+    fprintf(stderr, "test.atf_plan_run\n");
 
     printf("\n");
     printf("===============================================================================\n");
@@ -321,6 +328,7 @@ void atf_assert_bytes_eq(
 	uint8_t* expected, uint32_t expected_size, const char * file, int line
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_string_builder sb;
 	as_string_builder_assign(&sb, sizeof(result->message), result->message);
 	as_string_builder_append(&sb, "assertion failed: ");
@@ -352,6 +360,7 @@ void atf_assert_log(atf_test_result * result, const char * exp, const char * fil
 void
 atf_assert_err(atf_test_result* result, as_error* err, const char* file, int line)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     snprintf(result->message, sizeof(result->message), "error(%d) %s [at %s:%d in test %s:%d]",
 			 err->code, err->message, err->file, err->line, file, line);
     result->success = false;

@@ -106,6 +106,7 @@ typedef struct as_scan_builder {
 static inline void
 as_scan_log_iter(uint64_t parent_id, uint64_t task_id, uint32_t iter)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_log_iter\n");
 	as_log_debug("Scan parent=%" PRIu64 " task=%" PRIu64 " iter=%u", parent_id, task_id, iter);
 }
 
@@ -115,6 +116,7 @@ as_scan_partition_retry_async(as_async_scan_executor* se, as_error* err);
 static inline void
 as_scan_partition_executor_destroy(as_async_scan_executor* se)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partition_executor_destroy\n");
 	// Only async needs to release node_filter, so release here
 	// instead of as_partition_tracker_destroy().
 	if (se->pt->node_filter) {
@@ -128,6 +130,7 @@ as_scan_partition_executor_destroy(as_async_scan_executor* se)
 static void
 as_scan_partition_notify(as_async_scan_executor* se, as_error* err)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partition_notify\n");
 	if (err) {
 		as_partition_error(se->pt->parts_all);
 	}
@@ -143,6 +146,7 @@ as_scan_partition_notify(as_async_scan_executor* se, as_error* err)
 static void
 as_scan_partition_complete_async(as_event_executor* ee)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partition_complete_async\n");
 	as_async_scan_executor* se = (as_async_scan_executor*)ee;
 
 	// Handle error.
@@ -184,6 +188,7 @@ as_scan_parse_record_async(
 	as_async_scan_executor* se, as_async_scan_command* sc, uint8_t** pp, as_msg* msg, as_error* err
 	)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_parse_record_async\n");
 	as_record rec;
 	as_record_inita(&rec, msg->n_ops);
 	
@@ -225,6 +230,7 @@ as_scan_parse_record_async(
 static bool
 as_scan_parse_records_async(as_event_command* cmd)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_parse_records_async\n");
 	as_error err;
 	as_async_scan_command* sc = (as_async_scan_command*)cmd;
 	as_async_scan_executor* se = cmd->udata;  // udata is overloaded to contain executor.
@@ -289,6 +295,7 @@ as_scan_parse_records_async(as_event_command* cmd)
 static as_status
 as_scan_parse_record(uint8_t** pp, as_msg* msg, as_scan_task* task, as_error* err)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_parse_record\n");
 	as_record rec;
 	as_record_inita(&rec, msg->n_ops);
 	
@@ -329,6 +336,7 @@ as_scan_parse_record(uint8_t** pp, as_msg* msg, as_scan_task* task, as_error* er
 static as_status
 as_scan_parse_records(as_error* err, as_command* cmd, as_node* node, uint8_t* buf, size_t size)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_parse_records\n");
 	as_scan_task* task = cmd->udata;
 	uint8_t* p = buf;
 	uint8_t* end = buf + size;
@@ -388,6 +396,7 @@ as_scan_command_size(
 	const as_policy_scan* policy, const as_scan* scan, as_scan_builder* sb, as_error* err
 	)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_command_size\n");
 	sb->size = AS_HEADER_SIZE;
 	uint16_t n_fields = 0;
 
@@ -494,6 +503,7 @@ as_scan_command_init(
 	uint64_t task_id, as_scan_builder* sb
 	)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_command_init\n");
 	uint16_t n_ops = (scan->ops) ? scan->ops->binops.size : scan->select.size;
 	uint8_t* p;
 
@@ -620,6 +630,7 @@ as_scan_command_init(
 static as_status
 as_scan_command_execute(as_scan_task* task)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_command_execute\n");
 	as_error err;
 	as_error_init(&err);
 
@@ -732,6 +743,7 @@ as_scan_command_execute(as_scan_task* task)
 static void
 as_scan_worker(void* data)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_worker\n");
 	as_scan_task* task = (as_scan_task*)data;
 	
 	as_scan_complete_task complete_task;
@@ -751,6 +763,7 @@ as_scan_worker(void* data)
 static inline as_status
 as_scan_validate(as_error* err, const as_policy_scan* policy, const as_scan* scan)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_validate\n");
 	as_error_reset(err);
 	return AEROSPIKE_OK;
 }
@@ -761,6 +774,7 @@ as_scan_generic(
 	aerospike_scan_foreach_callback callback, void* udata, uint64_t* task_id_ptr
 	)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_generic\n");
 	as_cluster_add_tran(cluster);
 	as_status status = as_scan_validate(err, policy, scan);
 
@@ -865,6 +879,7 @@ as_scan_partitions_validate(
 	uint32_t* n_nodes
 	)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partition_validate\n");
 	as_status status = as_scan_validate(err, policy, scan);
 
 	if (status != AEROSPIKE_OK) {
@@ -878,6 +893,7 @@ as_scan_partitions(
 	as_cluster* cluster, as_error* err, const as_policy_scan* policy, const as_scan* scan,
 	as_partition_tracker* pt, aerospike_scan_foreach_callback callback, void* udata)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partisions\n");
 	as_cluster_add_tran(cluster);
 	uint64_t parent_id = as_random_get_uint64();
 	as_status status = AEROSPIKE_OK;
@@ -996,6 +1012,7 @@ as_scan_partitions(
 static as_status
 as_scan_partition_execute_async(as_async_scan_executor* se, as_partition_tracker* pt, as_error* err)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partition_execute_async\n");
 	as_event_executor* ee = &se->executor;
 	uint32_t n_nodes = pt->node_parts.size;
 
@@ -1133,6 +1150,7 @@ as_scan_partition_execute_async(as_async_scan_executor* se, as_partition_tracker
 static as_status
 as_scan_partition_retry_async(as_async_scan_executor* se_old, as_error* err)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partition_retry_async\n");
 	as_async_scan_executor* se = cf_malloc(sizeof(as_async_scan_executor));
 	se->listener = se_old->listener;
 	se->cluster = se_old->cluster;
@@ -1183,6 +1201,7 @@ as_scan_partition_async(
 	as_event_loop* event_loop
 	)
 {
+    fprintf(stderr, "aerospike_scan.as_scan_partition_async\n");
 	as_cluster_add_tran(cluster);
 	pt->sleep_between_retries = 0;
 	as_status status = as_partition_tracker_assign(pt, cluster, scan->ns, err);
@@ -1267,6 +1286,7 @@ as_scan_partition_async(
 bool
 as_async_scan_should_retry(as_event_command* cmd, as_status status)
 {
+    fprintf(stderr, "aerospike_scan.as_async_scan_should_retry\n");
 	as_async_scan_command* sc = (as_async_scan_command*)cmd;
 	as_async_scan_executor* se = cmd->udata;
 	return as_partition_tracker_should_retry(se->pt, sc->np, status);
@@ -1278,6 +1298,7 @@ aerospike_scan_background(
 	uint64_t* scan_id
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_background\n");
 	if (! policy) {
 		policy = &as->config.policies.scan;
 	}
@@ -1291,6 +1312,7 @@ aerospike_scan_wait(
 	uint32_t interval_ms
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_wait\n");
 	return aerospike_job_wait(as, err, policy, "scan", scan_id, interval_ms);
 }
 
@@ -1299,6 +1321,7 @@ aerospike_scan_info(
 	aerospike* as, as_error* err, const as_policy_info* policy, uint64_t scan_id, as_scan_info* info
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_info\n");
 	as_job_info job_info;
 	as_status status = aerospike_job_info(as, err, policy, "scan", scan_id, false, &job_info);
 	
@@ -1328,6 +1351,7 @@ aerospike_scan_foreach(
 	aerospike_scan_foreach_callback callback, void* udata
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_foreach\n");
 	if (! policy) {
 		policy = &as->config.policies.scan;
 	}
@@ -1359,6 +1383,7 @@ aerospike_scan_node(
 	const char* node_name, aerospike_scan_foreach_callback callback, void* udata
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_node\n");
 	if (! policy) {
 		policy = &as->config.policies.scan;
 	}
@@ -1399,6 +1424,7 @@ aerospike_scan_partitions(
 	as_partition_filter* pf, aerospike_scan_foreach_callback callback, void* udata
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_partitions\n");
 	as_cluster* cluster = as->cluster;
 
 	if (! policy) {
@@ -1439,6 +1465,7 @@ aerospike_scan_async(
 	uint64_t* scan_id, as_async_scan_listener listener, void* udata, as_event_loop* event_loop
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_async\n");
 	if (! policy) {
 		policy = &as->config.policies.scan;
 	}
@@ -1471,6 +1498,7 @@ aerospike_scan_node_async(
 	as_event_loop* event_loop
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_node_async\n");
 	if (! policy) {
 		policy = &as->config.policies.scan;
 	}
@@ -1509,6 +1537,7 @@ aerospike_scan_partitions_async(
 	as_partition_filter* pf, as_async_scan_listener listener, void* udata, as_event_loop* event_loop
 	)
 {
+    fprintf(stderr, "aerospike_scan.aerospike_scan_partions_async\n");
 	as_cluster* cluster = as->cluster;
 
 	if (! policy) {

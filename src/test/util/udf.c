@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
 
 #include "udf.h"
 #include "../test.h"
@@ -33,6 +34,7 @@
 extern aerospike * as;
 
 bool udf_readfile(const char * filename, as_bytes * content) {   
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	
 	FILE * file = fopen(filename,"r");
 
@@ -66,6 +68,7 @@ bool udf_readfile(const char * filename, as_bytes * content) {
 
 
 bool udf_put(const char * filename) {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 
     FILE * file = fopen(filename,"r");
 
@@ -115,6 +118,7 @@ bool udf_put(const char * filename) {
 }
 
 bool udf_remove(const char * filename) {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     
 	as_error err;
 	as_error_reset(&err);
@@ -133,6 +137,7 @@ bool udf_remove(const char * filename) {
 }
 
 bool udf_exists(const char * filename) {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     
 	as_error err;
 	as_error_reset(&err);

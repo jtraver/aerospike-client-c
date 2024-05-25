@@ -17,10 +17,12 @@
 #include "index_util.h"
 #include <aerospike/aerospike_index.h>
 #include "../test.h"
+#include <stdio.h>
 
 bool
 index_process_return_code(as_status status, as_error* err, as_index_task* task)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	switch (status) {
 		case AEROSPIKE_OK:
 			aerospike_index_create_wait(err, task, 0);

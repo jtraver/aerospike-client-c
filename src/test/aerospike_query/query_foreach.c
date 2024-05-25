@@ -75,6 +75,7 @@ bool namespace_in_memory = false;
 void
 blog_detailv(as_log_level level, const char* fmt, va_list ap)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     // Write message all at once so messages generated from multiple threads have less of a chance
     // of getting garbled.
     char fmtbuf[1024];
@@ -94,6 +95,7 @@ blog_detailv(as_log_level level, const char* fmt, va_list ap)
 static bool
 as_client_log_callback(as_log_level level, const char * func, const char * file, uint32_t line, const char * fmt, ...)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     va_list ap;
     va_start(ap, fmt);
     blog_detailv(level, fmt, ap);
@@ -105,6 +107,7 @@ as_client_log_callback(as_log_level level, const char * func, const char * file,
 static bool
 as_client_log_callback_noop(as_log_level level, const char * func, const char * file, uint32_t line, const char * fmt, ...)
 {
+    // fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     return true;
 }
 
@@ -113,6 +116,7 @@ as_client_log_callback_noop(as_log_level level, const char * func, const char * 
 void
 do_debug()
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     printf("C_CLIENT STDOUT \n\nSTART do_debug\n");
     as_log_set_level(AS_LOG_LEVEL_DEBUG);
     as_log_set_callback(as_client_log_callback);
@@ -150,10 +154,13 @@ dont_debug()
 bool
 query_foreach_create(void)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 	
 	int n_recs = 100;
+    fprintf(stdout, "query_foreach_create: n_recs = %d\n", n_recs);
+    fprintf(stderr, "query_foreach_create: n_recs = %d\n", n_recs);
 	
 	as_status status;
 	as_index_task task;
@@ -228,6 +235,11 @@ query_foreach_create(void)
 
 	char* buffer = alloca(n_recs * 1024 + 1);
 	uint32_t the_ttl = AS_RECORD_NO_EXPIRE_TTL;
+
+	as_policy_write sendKeyPolicy;
+	as_policy_write_init(&sendKeyPolicy);
+	sendKeyPolicy.key = AS_POLICY_KEY_SEND;
+	// as_status rc = aerospike_key_put(as, &err, &sendKeyPolicy, &key, &rec);
 	
 	// insert records
 	for (int i = 0; i < n_recs; i++) {
@@ -235,6 +247,7 @@ query_foreach_create(void)
 		if (i == 10) {
 			// We change the TTL from never to 100 days
 			the_ttl = 100 * 24 * 60 * 60;
+            printf("the_ttl = %d\n", the_ttl);
 		}
 		else if (i == 42) {
 			// NOTE - We pause on the 42nd iteration for a few
@@ -249,6 +262,7 @@ query_foreach_create(void)
 			// Also on the 42nd iteration we change the TTL to
 			// 10 days for the remaining records.
 			the_ttl = 10 * 24 * 60 * 60;
+            printf("the_ttl = %d\n", the_ttl);
 		}
 		
 		char * 	a = "abc";
@@ -337,11 +351,17 @@ query_foreach_create(void)
 		as_record_set_rawp(&r, "blob", blob_ptr, sizeof(uint32_t), false);
 
 		r.ttl = the_ttl;
+        printf("the_ttl = %d\n", the_ttl);
+		// r.ttl = AS_RECORD_NO_EXPIRE_TTL;
+        printf("r.ttl = %d\n", r.ttl);
 		
 		as_key key;
+        printf("C_CLIENT STDOUT namespace = %s, setname = %s, keystr = %s\n", NAMESPACE, SET, keystr);
+        fprintf(stderr, "C_CLIENT STDOUT namespace = %s, setname = %s, keystr = %s\n", NAMESPACE, SET, keystr);
 		as_key_init(&key, NAMESPACE, SET, keystr);
+		// as_key_init(&key, NAMESPACE, "jtq1", keystr);
 		
-		aerospike_key_put(as, &err, NULL, &key, &r);
+		aerospike_key_put(as, &err, &sendKeyPolicy, &key, &r);
 		as_record_destroy(&r);
 		
 		if (err.code != AEROSPIKE_OK) {
@@ -366,6 +386,7 @@ query_foreach_create(void)
 		
 		as_record_destroy(r1);
 	}
+    fprintf(stderr, "C_CLIENT STDOUT create DONE");
 	return true;
 }
 
@@ -375,6 +396,7 @@ query_foreach_create(void)
 bool
 query_foreach_destroy(void)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -449,6 +471,23 @@ query_foreach_destroy(void)
 static bool
 before(atf_suite * suite)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each before\n");
+    fprintf(stderr, "query for each before: sleep 10\n");
+    fflush(stdout);
+    fflush(stderr);
+    as_sleep(10000);
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each before\n");
+    fprintf(stderr, "query for each before: sleep 10\n");
+    fflush(stdout);
+    fflush(stderr);
+    sleep(100);
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each before\n");
+    fprintf(stderr, "query for each before: sleep 10\n");
+    fflush(stdout);
+    fflush(stderr);
 	if (! udf_put(LUA_FILE)) {
 		error("failure while uploading: %s", LUA_FILE);
 		return false;
@@ -459,12 +498,74 @@ before(atf_suite * suite)
 		return false;
 	}
 
-	return query_foreach_create();
+    query_foreach_create();
+    fprintf(stderr, "query for each before: sleep 10\n");
+    fflush(stdout);
+    fflush(stderr);
+    fprintf(stderr, "query for each before: sleep 10\n");
+    as_sleep(10000);
+    fprintf(stderr, "query for each before: sleep 10\n");
+    fflush(stdout);
+    fflush(stderr);
+    sleep(100);
+    fprintf(stderr, "query for each before: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+    fprintf(stderr, "query for each before: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+	return true;
 }
 
 static bool
 after(atf_suite * suite)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each after: sleep 100\n");
+    fflush(stdout);
+    fflush(stderr);
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each after: sleep 100\n");
+    fflush(stdout);
+    fflush(stderr);
+    as_sleep(100000);
+
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each after: sleep 100\n");
+    fflush(stdout);
+    fflush(stderr);
+    sleep(100);
+    fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+    fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each after: sleep 100\n");
+    fflush(stdout);
+    fflush(stderr);
+    sleep(100);
+    fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+    fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each after: sleep 100\n");
+    fflush(stdout);
+    fflush(stderr);
+    sleep(100);
+    fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+    fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+
 	return true;
     /*
 	if (! udf_remove(LUA_FILE)) {
@@ -479,6 +580,7 @@ after(atf_suite * suite)
 static bool
 count_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint32_t * count = (uint32_t *) udata;
 	if (v == NULL) {
 		info("count: %d", as_load_uint32(count));
@@ -495,12 +597,14 @@ count_callback(const as_val* v, void* udata)
 
 TEST(query_foreach_exists, UDF_FILE" exists")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	assert_true(udf_exists(LUA_FILE));
 }
 
 static bool
 query_foreach_count_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint32_t * count = (uint32_t *) udata;
 	if (v == NULL) {
 		info("count: %d", as_load_uint32(count));
@@ -513,6 +617,7 @@ query_foreach_count_callback(const as_val* v, void* udata)
 
 TEST(query_foreach_1, "count(*) where a == 'abc' (non-aggregating)")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -538,6 +643,7 @@ TEST(query_foreach_1, "count(*) where a == 'abc' (non-aggregating)")
 static bool
 query_foreach_2_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (v != NULL) {
 		as_integer * i = as_integer_fromval(v);
 		if (i) {
@@ -550,6 +656,7 @@ query_foreach_2_callback(const as_val* v, void* udata)
 
 TEST(query_foreach_2, "count(*) where a == 'abc' (aggregating)")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -578,6 +685,7 @@ TEST(query_foreach_2, "count(*) where a == 'abc' (aggregating)")
 static bool
 query_foreach_3_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (v != NULL) {
 		as_integer * result = as_integer_fromval(v);
 		if (result != NULL) {
@@ -590,6 +698,7 @@ query_foreach_3_callback(const as_val* v, void* udata)
 
 TEST(query_foreach_3, "sum(e) where a == 'abc'")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -620,6 +729,7 @@ TEST(query_foreach_3, "sum(e) where a == 'abc'")
 static bool
 query_foreach_4_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (v != NULL) {
 		as_integer * result = as_integer_fromval(v);
 		if (result != NULL) {
@@ -632,6 +742,7 @@ query_foreach_4_callback(const as_val* v, void* udata)
 
 TEST(query_foreach_4, "sum(d) where b == 100 and d == 1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -667,6 +778,7 @@ TEST(query_foreach_4, "sum(d) where b == 100 and d == 1")
 
 TEST(query_foreach_5, "IN LIST count(*) where x contains 'x'")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -692,6 +804,7 @@ TEST(query_foreach_5, "IN LIST count(*) where x contains 'x'")
 
 TEST(query_foreach_6, "IN MAPKEYS count(*) where y contains 'ykey'")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -717,6 +830,7 @@ TEST(query_foreach_6, "IN MAPKEYS count(*) where y contains 'ykey'")
 
 TEST(query_foreach_7, "IN MAPVALUES count(*) where y contains 'yvalue'")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -742,6 +856,7 @@ TEST(query_foreach_7, "IN MAPVALUES count(*) where y contains 'yvalue'")
 
 TEST(query_foreach_8, "IN LIST count(*) where z between 50 and 51")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -779,6 +894,7 @@ TEST(query_foreach_8, "IN LIST count(*) where z between 50 and 51")
 
 TEST(query_foreach_9, "CTX on LIST count(*) where max value in list 'z' is between 51 and 54")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -819,6 +935,7 @@ TEST(query_foreach_9, "CTX on LIST count(*) where max value in list 'z' is betwe
 
 TEST(query_with_range_filter, "query_with_range_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -861,6 +978,7 @@ TEST(query_with_range_filter, "query_with_range_filter")
 
 TEST(query_with_equality_filter, "query_with_equality_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -894,6 +1012,7 @@ TEST(query_with_equality_filter, "query_with_equality_filter")
 
 TEST(query_with_rec_size_filter, "query_with_rec_size_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -927,6 +1046,7 @@ TEST(query_with_rec_size_filter, "query_with_rec_size_filter")
 
 TEST(query_with_rec_device_size_filter, "query_with_rec_device_size_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -966,6 +1086,7 @@ TEST(query_with_rec_device_size_filter, "query_with_rec_device_size_filter")
 
 TEST(query_with_rec_memory_size_filter, "query_with_rec_memory_size_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1005,6 +1126,7 @@ TEST(query_with_rec_memory_size_filter, "query_with_rec_memory_size_filter")
 
 TEST(query_intermittent_bin_filter, "query_intermittent_bin_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1040,6 +1162,7 @@ TEST(query_intermittent_bin_filter, "query_intermittent_bin_filter")
 
 TEST(scan_with_rec_last_update_filter, "scan_with_rec_last_update_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1072,6 +1195,7 @@ TEST(scan_with_rec_last_update_filter, "scan_with_rec_last_update_filter")
 
 TEST(scan_with_rec_last_update_filter_less, "scan_with_rec_last_update_filter_less")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1104,6 +1228,7 @@ TEST(scan_with_rec_last_update_filter_less, "scan_with_rec_last_update_filter_le
 
 TEST(scan_with_rec_void_time_filter_1, "scan_with_rec_void_time_filter_1")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1134,6 +1259,7 @@ TEST(scan_with_rec_void_time_filter_1, "scan_with_rec_void_time_filter_1")
 
 TEST(scan_with_rec_void_time_filter_2, "scan_with_rec_void_time_filter_2")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1176,6 +1302,7 @@ TEST(scan_with_rec_void_time_filter_2, "scan_with_rec_void_time_filter_2")
 
 TEST(scan_with_rec_void_time_filter_3, "scan_with_rec_void_time_filter_3")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1210,6 +1337,7 @@ TEST(scan_with_rec_void_time_filter_3, "scan_with_rec_void_time_filter_3")
 
 TEST(scan_with_rec_digest_modulo_filter, "scan_with_rec_digest_modulo_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1245,6 +1373,7 @@ TEST(scan_with_rec_digest_modulo_filter, "scan_with_rec_digest_modulo_filter")
 
 TEST(query_with_or_filter, "query_with_or_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1287,6 +1416,7 @@ TEST(query_with_or_filter, "query_with_or_filter")
 
 TEST(query_with_not_filter, "query_with_not_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1330,6 +1460,7 @@ TEST(query_with_not_filter, "query_with_not_filter")
 
 TEST(query_with_regex_filter, "query_with_regex_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1364,6 +1495,7 @@ TEST(query_with_regex_filter, "query_with_regex_filter")
 
 TEST(query_with_regex_filter_icase, "query_with_regex_filter_icase")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1399,6 +1531,7 @@ TEST(query_with_regex_filter_icase, "query_with_regex_filter_icase")
 
 TEST(query_with_list_filter, "query_with_list_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1435,6 +1568,7 @@ TEST(query_with_list_filter, "query_with_list_filter")
 
 TEST(query_with_mapkey_filter, "query_with_mapkey_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1472,6 +1606,7 @@ TEST(query_with_mapkey_filter, "query_with_mapkey_filter")
 
 TEST(query_with_mapval_filter, "query_with_mapval_filter")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1512,6 +1647,7 @@ TEST(query_with_mapval_filter, "query_with_mapval_filter")
 static bool
 query_quit_early_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (v) {
 		uint32_t * count = (uint32_t *) udata;
 		as_incr_uint32(count);
@@ -1521,6 +1657,7 @@ query_quit_early_callback(const as_val* v, void* udata)
 
 TEST(query_quit_early, "normal query and quit early")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_nodes* nodes = as_nodes_reserve(as->cluster);
 	uint32_t nodes_size = nodes->size;
 	as_nodes_release(nodes);
@@ -1550,6 +1687,7 @@ TEST(query_quit_early, "normal query and quit early")
 
 TEST(query_agg_quit_early, "aggregation and quit early")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_nodes* nodes = as_nodes_reserve(as->cluster);
 	uint32_t nodes_size = nodes->size;
 	as_nodes_release(nodes);
@@ -1582,6 +1720,7 @@ TEST(query_agg_quit_early, "aggregation and quit early")
 static bool
 query_quit_early_bytes_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (v) {
 		as_bytes * bval = as_bytes_fromval(v);
 
@@ -1595,6 +1734,7 @@ query_quit_early_bytes_callback(const as_val* v, void* udata)
 
 TEST(query_filter_map_bytes, "return bytes from a mapper")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1622,6 +1762,7 @@ TEST(query_filter_map_bytes, "return bytes from a mapper")
 
 TEST(query_foreach_nullset, "test null-set behavior")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1642,7 +1783,13 @@ TEST(query_foreach_nullset, "test null-set behavior")
 	as_key key;
 	as_key_init(&key, NAMESPACE, setname, "keyindex-nullset");
 
-	aerospike_key_put(as, &err, NULL, &key, &r);
+    printf("C_CLIENT STDOUT namespace = %s, setname = %s, keystr = %s\n", NAMESPACE, "NULL", "keyindex-nullset");
+    fprintf(stderr, "C_CLIENT STDOUT namespace = %s, setname = %s, keystr = %s\n", NAMESPACE, "NULL", "keyindex-nullset");
+	as_policy_write sendKeyPolicy;
+	as_policy_write_init(&sendKeyPolicy);
+	sendKeyPolicy.key = AS_POLICY_KEY_SEND;
+	// as_status rc = aerospike_key_put(as, &err, &sendKeyPolicy, &key, &rec);
+	aerospike_key_put(as, &err, &sendKeyPolicy, &key, &r);
 	assert_int_eq(err.code, AEROSPIKE_OK);
 
 	as_record_destroy(&r);
@@ -1675,6 +1822,7 @@ typedef struct foreach_double_udata_s {
 static bool
 query_foreach_double_callback(const as_val* v, void* udata)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (v) {
 		as_record* rec = as_record_fromval(v);
 		foreach_double_udata *d = (foreach_double_udata *)udata;
@@ -1688,10 +1836,13 @@ query_foreach_double_callback(const as_val* v, void* udata)
 
 TEST(query_foreach_int_with_double_bin, "test query on double behavior")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
 	int n_recs = 1000;
+    fprintf(stdout, "query_foreach_int_with_double_bin: n_recs = %d\n", n_recs);
+    fprintf(stderr, "query_foreach_int_with_double_bin: n_recs = %d\n", n_recs);
 	int n_start = 51;
 	int n_end = 70;
 	char *int_bin = "int_bin";
@@ -1707,6 +1858,10 @@ TEST(query_foreach_int_with_double_bin, "test query on double behavior")
 
 	as_record r;
 	as_record_init(&r, 2);
+	as_policy_write sendKeyPolicy;
+	as_policy_write_init(&sendKeyPolicy);
+	sendKeyPolicy.key = AS_POLICY_KEY_SEND;
+	// as_status rc = aerospike_key_put(as, &err, &sendKeyPolicy, &key, &rec);
 	// insert records
 	for (int i = 1; i <= n_recs; i++) {
 		as_key key;
@@ -1715,7 +1870,10 @@ TEST(query_foreach_int_with_double_bin, "test query on double behavior")
 		as_record_set_int64(&r, int_bin, i);
 		as_record_set_double(&r, double_bin, i/(double)10);
 
-		aerospike_key_put(as, &err, NULL, &key, &r);
+        printf("C_CLIENT STDOUT namespace = %s, setname = %s, keystr = %d\n", NAMESPACE, SET, i);
+        fprintf(stderr, "C_CLIENT STDOUT namespace = %s, setname = %s, keystr = %d\n", NAMESPACE, SET, i);
+		// aerospike_key_put(as, &err, NULL, &key, &r);
+		aerospike_key_put(as, &err, &sendKeyPolicy, &key, &r);
 	}
 	as_record_destroy(&r);
 
@@ -1755,6 +1913,9 @@ TEST(query_foreach_int_with_double_bin, "test query on double behavior")
 
 TEST(query_list_ctx_is_string, "IN LIST count(*) where x[0] is 'x'")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stdout, "query_foreach.query_list_ctx_is_string\n");
+    fprintf(stderr, "query_foreach.query_list_ctx_is_string\n");
 	as_error err;
 	as_error_reset(&err);
 
@@ -1770,7 +1931,7 @@ TEST(query_list_ctx_is_string, "IN LIST count(*) where x[0] is 'x'")
 	as_query_where_inita(&q, 1);
 	as_query_where_with_ctx(&q, "x", &ctx, as_string_equals("x"));
 
-    do_debug();
+    // do_debug();
 	aerospike_query_foreach(as, &err, NULL, &q, query_foreach_count_callback, &count);
     dont_debug();
 
@@ -1783,10 +1944,13 @@ TEST(query_list_ctx_is_string, "IN LIST count(*) where x[0] is 'x'")
 
 	as_cdt_ctx_destroy(&ctx);
 	as_query_destroy(&q);
+    fprintf(stdout, "DONE query_foreach.query_list_ctx_is_string\n");
+    fprintf(stderr, "DONE query_foreach.query_list_ctx_is_string\n");
 }
 
 TEST(query_map_ctx_is_string, "IN LIST count(*) where y['ykey'] is 'yvalue'")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1820,6 +1984,7 @@ TEST(query_map_ctx_is_string, "IN LIST count(*) where y['ykey'] is 'yvalue'")
 
 TEST(query_blob_index, "query blob index")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1847,6 +2012,7 @@ TEST(query_blob_index, "query blob index")
 
 TEST(query_blob_list_index, "query blob list index")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error err;
 	as_error_reset(&err);
 
@@ -1878,6 +2044,7 @@ TEST(query_blob_list_index, "query blob list index")
 
 SUITE(query_foreach, "aerospike_query_foreach tests")
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	suite_before(before);
 	suite_after(after);
 

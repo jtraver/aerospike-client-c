@@ -17,6 +17,7 @@
 #include "../test.h"
 #include "test_aerospike.h"
 #include <string.h>
+#include <stdio.h>
 
 /*****************************************************************************
  * STATIC FUNCTIONS
@@ -42,14 +43,17 @@ static const as_aerospike_hooks test_aerospike_hooks = {
  *****************************************************************************/
 
 as_aerospike * test_aerospike_new() {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     return as_aerospike_new(NULL, &test_aerospike_hooks);
 }
 
 as_aerospike * test_aerospike_init(as_aerospike * a) {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     return as_aerospike_init(a, NULL, &test_aerospike_hooks);
 }
 
 static int test_aerospike_log(const as_aerospike * as, const char * file, const int line, const int level, const char * msg) {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     char l[10] = {'\0'};
     switch(level) {
         case 1:

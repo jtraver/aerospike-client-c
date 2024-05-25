@@ -32,6 +32,7 @@
 static as_status
 as_info_parse_error(char* begin, char** message)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Parse error format: [<code>][:<message>][\t|\n]
 	// Terminate tab.
 	char* p = strchr(begin, '\t');
@@ -71,6 +72,7 @@ as_info_parse_error(char* begin, char** message)
 static void
 as_info_decode_error(char* begin)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Decode base64 message in place.
 	// UDF error format: <error message>;file=<file>;line=<line>;message=<base64 message>\n
 	char* msg = strstr(begin, "message=");
@@ -90,6 +92,7 @@ as_info_decode_error(char* begin)
 static bool
 as_info_keep_connection(as_status status)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	switch (status) {
 		case AEROSPIKE_ERR_CONNECTION:
 		case AEROSPIKE_ERR_TIMEOUT:
@@ -114,6 +117,7 @@ as_info_command_node(
 	char** response
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_socket socket;
 	as_status status = as_node_get_connection(err, node, 0, deadline_ms, &socket);
 	
@@ -148,6 +152,7 @@ as_info_command_node_async(
 	as_async_info_listener listener, void* udata, as_event_loop* event_loop
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error_reset(err);
 
 	if (! policy) {
@@ -171,6 +176,7 @@ as_info_command_node_async(
 as_status
 as_info_command_random_node(aerospike* as, as_error* err, as_policy_info* policy, char* command)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_error_reset(err);
 
 	if (! policy) {
@@ -201,6 +207,7 @@ as_info_command_host(
 	bool send_asis, uint64_t deadline_ms, char** response, const char* tls_name
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_socket sock;
 	as_status status = as_info_create_socket(cluster, err, addr, deadline_ms, tls_name, &sock);
 	
@@ -224,6 +231,7 @@ as_info_command(
 	uint64_t max_response_length, char** values
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	*values = 0;
 	
 	size_t size = 8;  // header size.
@@ -346,6 +354,7 @@ as_info_create_socket(
 	const char* tls_name, as_socket* sock
 	)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// This function can't authenticate because node and session token are not specified.
 	as_tls_context* ctx = as_socket_get_tls_context(cluster->tls_ctx);
 	return as_socket_create_and_connect(sock, err, addr, ctx, tls_name, deadline_ms);	
@@ -354,6 +363,7 @@ as_info_create_socket(
 as_status
 as_info_validate(char* response, char** message)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	char* p = response;
 
 	if (p) {
@@ -388,6 +398,7 @@ as_info_validate(char* response, char** message)
 as_status
 as_info_validate_item(as_error* err, char* response)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (strncmp(response, "ERROR:", 6) == 0) {
 		char* msg = NULL;
 		as_status status = as_info_parse_error(response + 6, &msg);
@@ -399,6 +410,7 @@ as_info_validate_item(as_error* err, char* response)
 as_status
 as_info_parse_single_response(char *values, char **value)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	while (*values && (*values != '\t')) {
 		values++;
 	}
@@ -423,6 +435,7 @@ as_info_parse_single_response(char *values, char **value)
 void
 as_info_parse_multi_response(char* buf, as_vector* /* <as_name_value> */ values)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Info buffer format: name1\tvalue1\nname2\tvalue2\n...
 	char* p = buf;
 	char* begin = p;

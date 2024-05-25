@@ -59,6 +59,8 @@ bool g_has_ttl = false;
 static bool
 as_client_log_callback(as_log_level level, const char * func, const char * file, uint32_t line, const char * fmt, ...)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	va_list ap;
 	va_start(ap, fmt);
 	atf_logv(stderr, as_log_level_tostring(level), ATF_LOG_PREFIX, NULL, 0, fmt, ap);
@@ -69,6 +71,7 @@ as_client_log_callback(as_log_level level, const char * func, const char * file,
 static void
 usage()
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	fprintf(stderr, "Usage:\n");
 	fprintf(stderr, "  -h, --host <host1>[:<tlsname1>][:<port1>],...  Default: 127.0.0.1\n");
 	fprintf(stderr, "  Server seed hostnames or IP addresses.\n");
@@ -164,6 +167,7 @@ static struct option long_options[] = {
 
 static bool parse_opts(int argc, char* argv[])
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	int option_index = 0;
 	int c;
 
@@ -278,6 +282,7 @@ static bool parse_opts(int argc, char* argv[])
 
 static bool before(atf_plan* plan)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if ( as ) {
 		error("aerospike was already initialized");
 		return false;
@@ -399,6 +404,8 @@ static bool before(atf_plan* plan)
 
 static bool after(atf_plan* plan)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "aerospike_test.after\n");
 	if ( ! as ) {
 		error("aerospike was not initialized");
 		return false;
@@ -429,6 +436,7 @@ static bool after(atf_plan* plan)
 
 PLAN(aerospike_test)
 {
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (! parse_opts(g_argc, g_argv)) {
 		return;
 	}
