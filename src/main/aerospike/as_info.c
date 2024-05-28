@@ -398,7 +398,7 @@ as_info_validate(char* response, char** message)
 as_status
 as_info_validate_item(as_error* err, char* response)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (strncmp(response, "ERROR:", 6) == 0) {
 		char* msg = NULL;
 		as_status status = as_info_parse_error(response + 6, &msg);
@@ -435,7 +435,7 @@ as_info_parse_single_response(char *values, char **value)
 void
 as_info_parse_multi_response(char* buf, as_vector* /* <as_name_value> */ values)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	// Info buffer format: name1\tvalue1\nname2\tvalue2\n...
 	char* p = buf;
 	char* begin = p;

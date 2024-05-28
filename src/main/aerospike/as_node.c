@@ -712,7 +712,7 @@ as_node_close_idle_connections(as_node* node, as_conn_pool* pool, int count)
 void
 as_node_balance_connections(as_node* node)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_conn_pool* pools = node->sync_conn_pools;
 	as_cluster* cluster = node->cluster;
 	uint32_t max = cluster->conn_pools_per_node;
@@ -862,7 +862,7 @@ as_node_has_rack(as_node* node, const char* ns, int rack_id)
 static as_status
 as_node_get_tend_connection(as_error* err, as_node* node)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_cluster* cluster = node->cluster;
 	as_status status = AEROSPIKE_OK;
 
@@ -918,7 +918,7 @@ as_node_get_tend_connection(as_error* err, as_node* node)
 static uint8_t*
 as_node_get_info(as_error* err, as_node* node, const char* names, size_t names_len, uint64_t deadline_ms, uint8_t* stack_buf)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_socket* sock = &node->info_socket;
 	
 	// Prepare the write request buffer.
@@ -983,7 +983,7 @@ as_node_get_info(as_error* err, as_node* node, const char* names, size_t names_l
 static as_status
 as_node_verify_name(as_error* err, as_node* node, const char* name)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (name == 0 || *name == 0) {
 		return as_error_set_message(err, AEROSPIKE_ERR_CLIENT, "Node name not returned from info request.");
 	}
@@ -1020,7 +1020,7 @@ static as_status
 as_node_process_response(as_cluster* cluster, as_error* err, as_node* node, as_vector* values,
 						 as_peers* peers)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_status status;
 
 	for (uint32_t i = 0; i < values->size; i++) {
@@ -1078,7 +1078,7 @@ as_node_process_response(as_cluster* cluster, as_error* err, as_node* node, as_v
 as_status
 as_node_refresh(as_cluster* cluster, as_error* err, as_node* node, as_peers* peers)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	as_status status = as_node_get_tend_connection(err, node);
 	
 	if (status != AEROSPIKE_OK) {

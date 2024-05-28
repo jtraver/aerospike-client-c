@@ -23,7 +23,7 @@
 void
 as_proto_swap_to_be(as_proto *p)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t	version = (uint8_t)p->version;
 	uint8_t type = (uint8_t)p->type;
 	p->version = p->type = 0;
@@ -36,7 +36,7 @@ as_proto_swap_to_be(as_proto *p)
 void
 as_proto_swap_from_be(as_proto *p)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	uint8_t	version = (uint8_t)p->version;
 	uint8_t type = (uint8_t)p->type;
 	p->version = p->type = 0;
@@ -90,7 +90,7 @@ as_compressed_size_error(as_error* err, size_t size)
 as_status
 as_proto_parse(as_error* err, as_proto* proto)
 {
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    // idle function fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
 	if (proto->version != AS_PROTO_VERSION) {
 		return as_proto_version_error(err, proto);
 	}

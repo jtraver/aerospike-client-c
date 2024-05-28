@@ -239,7 +239,6 @@ query_foreach_create(void)
 	as_policy_write sendKeyPolicy;
 	as_policy_write_init(&sendKeyPolicy);
 	sendKeyPolicy.key = AS_POLICY_KEY_SEND;
-	// as_status rc = aerospike_key_put(as, &err, &sendKeyPolicy, &key, &rec);
 	
 	// insert records
 	for (int i = 0; i < n_recs; i++) {
@@ -558,7 +557,8 @@ after(atf_suite * suite)
     fprintf(stderr, "query for each after: sleep 100\n");
     fflush(stdout);
     fflush(stderr);
-    sleep(100);
+    // fprintf(stderr, "query for each after: sleep forever\n");
+    // sleep(100000);
     fprintf(stderr, "query for each after: DONE\n");
     fflush(stdout);
     fflush(stderr);
