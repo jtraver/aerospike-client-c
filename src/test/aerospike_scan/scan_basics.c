@@ -1330,7 +1330,29 @@ TEST(scan_invalid_filter, "scan invalid filter")
  */
 static bool before(atf_suite * suite) {
 	as_error err;
+	// aerospike_truncate(as, &err, NULL, NS, NULL, 0);
+    //
+    // scan filter set_name will fail without truncate namespace (null set)
 	aerospike_truncate(as, &err, NULL, NS, NULL, 0);
+
+	// aerospike_truncate(as, &err, NULL, NS, SET1, 0);
+	// aerospike_truncate(as, &err, NULL, NS, SET2, 0);
+	// aerospike_truncate(as, &err, NULL, NS, SET3D, 0);
+	// aerospike_truncate(as, &err, NULL, NS, SET3, 0);
+	// aerospike_truncate(as, &err, NULL, NS, SET4D, 0);
+	// aerospike_truncate(as, &err, NULL, NS, SET4, 0);
+	// aerospike_truncate(as, &err, NULL, NS, SET5, 0);
+	// aerospike_truncate(as, &err, NULL, NS, SET6, 0);
+
+    // #define SET1 "sb_set1"
+    // #define SET2 "sb_set2"
+    // #define SET3D "sb_set3d"
+    // #define SET3 "sb_set3"
+    // #define SET4D "sb_set4d"
+    // #define SET4 "sb_set4"
+    // #define SET5 "sb_set5"
+    // #define SET6 "sb_set6"
+
 
 	insert_data(NUM_RECS_SET1, SET1);
 	insert_data(NUM_RECS_SET2, SET2);

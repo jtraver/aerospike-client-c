@@ -481,7 +481,7 @@ before(atf_suite * suite)
     fprintf(stderr, "query for each before: sleep 10\n");
     fflush(stdout);
     fflush(stderr);
-    sleep(100);
+    sleep(10);
     fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     fprintf(stderr, "query for each before\n");
     fprintf(stderr, "query for each before: sleep 10\n");
@@ -506,7 +506,7 @@ before(atf_suite * suite)
     fprintf(stderr, "query for each before: sleep 10\n");
     fflush(stdout);
     fflush(stderr);
-    sleep(100);
+    sleep(10);
     fprintf(stderr, "query for each before: DONE\n");
     fflush(stdout);
     fflush(stderr);
@@ -520,41 +520,41 @@ static bool
 after(atf_suite * suite)
 {
     fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
-    fprintf(stderr, "query for each after: sleep 100\n");
+    fprintf(stderr, "query for each after: sleep 10\n");
     fflush(stdout);
     fflush(stderr);
     fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
-    fprintf(stderr, "query for each after: sleep 100\n");
+    fprintf(stderr, "query for each after: sleep 10\n");
     fflush(stdout);
     fflush(stderr);
-    as_sleep(100000);
+    as_sleep(10000);
+
+    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
+    fprintf(stderr, "query for each after: sleep 10\n");
+    fflush(stdout);
+    fflush(stderr);
+    sleep(10);
+    // fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
+    // fprintf(stderr, "query for each after: DONE\n");
+    fflush(stdout);
+    fflush(stderr);
 
     fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
     fprintf(stderr, "query for each after: sleep 100\n");
     fflush(stdout);
     fflush(stderr);
     sleep(100);
-    fprintf(stderr, "query for each after: DONE\n");
+    // fprintf(stderr, "query for each after: DONE\n");
     fflush(stdout);
     fflush(stderr);
-    fprintf(stderr, "query for each after: DONE\n");
-    fflush(stdout);
-    fflush(stderr);
-
-    fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
-    fprintf(stderr, "query for each after: sleep 100\n");
-    fflush(stdout);
-    fflush(stderr);
-    sleep(100);
-    fprintf(stderr, "query for each after: DONE\n");
-    fflush(stdout);
-    fflush(stderr);
-    fprintf(stderr, "query for each after: DONE\n");
+    // fprintf(stderr, "query for each after: DONE\n");
     fflush(stdout);
     fflush(stderr);
 
     fprintf(stderr, "%s.%s.%d\n", __FILE__, __func__, __LINE__);
-    fprintf(stderr, "query for each after: sleep 100\n");
+    // fprintf(stderr, "query for each after: sleep 100\n");
     fflush(stdout);
     fflush(stderr);
     // fprintf(stderr, "query for each after: sleep forever\n");
