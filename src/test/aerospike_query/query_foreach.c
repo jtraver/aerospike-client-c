@@ -1775,7 +1775,8 @@ TEST(query_foreach_nullset, "test null-set behavior")
 	index_process_return_code(status, &err, &task);
 
 	as_record r;
-	as_record_init(&r, 2);
+	// as_record_init(&r, 2);   is this a bug?
+	as_record_init(&r, 3);
 	as_record_set_int64(&r, "NUMERIC", 1);
 	as_record_set_str(&r, 	"bn_STRING", "2");
 	as_record_set_int64(&r, "bn2", 3);
@@ -1969,7 +1970,9 @@ TEST(query_map_ctx_is_string, "IN LIST count(*) where y['ykey'] is 'yvalue'")
 	as_query_where_inita(&q, 1);
 	as_query_where_with_ctx(&q, "y", &ctx, as_string_equals("yvalue"));
 
+    do_debug();
 	aerospike_query_foreach(as, &err, NULL, &q, query_foreach_count_callback, &count);
+    dont_debug();
 
 	if (err.code != AEROSPIKE_OK) {
 		fprintf(stderr, "error(%d) %s at [%s:%d]", err.code, err.message, err.file, err.line);
