@@ -131,7 +131,7 @@ as_metrics_process_cpu_load_mem_usage(as_error* err, as_metrics_writer* mw, uint
 #include<sys/syscall.h>
 
 static double
-as_metrics_process_mem_usage()
+as_metrics_process_mem_usage(void)
 {
 	struct task_basic_info t_info;
 	mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -145,7 +145,7 @@ as_metrics_process_mem_usage()
 }
 
 static double
-as_metrics_process_cpu_load()
+as_metrics_process_cpu_load(void)
 {
 	pid_t pid = getpid();
 
@@ -375,7 +375,7 @@ as_metrics_open_writer(as_metrics_writer* mw, as_error* err)
 	timestamp_to_string(now_str, sizeof(now_str));
 	
 	char data[512];
-	int rv = snprintf(data, sizeof(data), "%s header(1) cluster[name,cpu,mem,invalidNodeCount,tranCount,retryCount,delayQueueTimeoutCount,eventloop[],node[]] eventloop[processSize,queueSize] node[name,address,port,syncConn,asyncConn,errors,timeouts,latency[]] conn[inUse,inPool,opened,closed] latency(%u,%u)[type[l1,l2,l3...]]\n",
+	int rv = snprintf(data, sizeof(data), "%s header(1) cluster[name,cpu,mem,invalidNodeCount,commandCount,retryCount,delayQueueTimeoutCount,eventloop[],node[]] eventloop[processSize,queueSize] node[name,address,port,syncConn,asyncConn,errors,timeouts,latency[]] conn[inUse,inPool,opened,closed] latency(%u,%u)[type[l1,l2,l3...]]\n",
 		now_str, mw->latency_columns, mw->latency_shift);
 	if (rv <= 0) {
 		fclose(mw->file);
@@ -523,7 +523,7 @@ as_metrics_write_cluster(as_error* err, as_metrics_writer* mw, as_cluster* clust
 	as_string_builder_append_char(&sb, ',');
 	as_string_builder_append_uint(&sb, cluster->invalid_node_count); // Cumulative. Not reset on each interval.
 	as_string_builder_append_char(&sb, ',');
-	as_string_builder_append_uint64(&sb, as_cluster_get_tran_count(cluster));  // Cumulative. Not reset on each interval.
+	as_string_builder_append_uint64(&sb, as_cluster_get_command_count(cluster));  // Cumulative. Not reset on each interval.
 	as_string_builder_append_char(&sb, ',');
 	as_string_builder_append_uint64(&sb, as_cluster_get_retry_count(cluster)); // Cumulative. Not reset on each interval.
 	as_string_builder_append_char(&sb, ',');
