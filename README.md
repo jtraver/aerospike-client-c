@@ -9,21 +9,25 @@ are also included.
 
 ### Debian and Ubuntu
 
-	$ sudo apt-get install libc6-dev libssl-dev autoconf automake libtool g++ zlib1g-dev
+	$ sudo apt-get install autoconf automake g++ libc6-dev libev-dev libevent-dev libssl-dev libtool libuv1-dev libyaml-dev zlib1g-dev
 
 	[Also do on Ubuntu:]
 	$ sudo apt-get install ncurses-dev
 
+If you intend on building packages for a distribution, also perform this:
+
+    $ sudo apt install doxygen graphviz zip
+
 ### Red Hat Enterprise Linux, CentOS and Amazon Linux
 
-	$ sudo yum install openssl-devel glibc-devel autoconf automake libtool libz-devel
+	$ sudo yum install openssl-devel glibc-devel autoconf automake libtool libz-devel libyaml-devel
 
 	[Optional:]
 	$ sudo yum install gcc-c++ graphviz rpm-build 
 
 ### Fedora
 
-	$ sudo yum install openssl-devel glibc-devel autoconf automake libtool libz-devel
+	$ sudo yum install openssl-devel glibc-devel autoconf automake libtool libz-devel libyaml-devel
 
 	[Optional:]
 	$ sudo yum install gcc-c++ graphviz rpm-build 
@@ -43,7 +47,7 @@ See [Windows Build](vs).
 	
 ### OpenSSL Library
 
-This minimum OpenSSL library version is 1.0.2.
+The minimum OpenSSL library version is 1.0.2.
 
 ### Event Library (Optional)
 
@@ -83,7 +87,7 @@ When compiling your async applications with aerospike header files, the event li
 must be defined (`-DAS_USE_LIBUV`, `-DAS_USE_LIBEV` or `-DAS_USE_LIBEVENT`) on the command line or
 in an IDE.  Example:
 
-	$ gcc -DAS_USE_LIBUV -o myapp myapp.c -laerospike -lev -lssl -lcrypto -lpthread -lm -lz
+	$ gcc -DAS_USE_LIBUV -o myapp myapp.c -laerospike -lev -lssl -lcrypto -lpthread -lyaml -lm -lz
 
 ## Build
 

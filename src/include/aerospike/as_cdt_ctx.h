@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2024 Aerospike, Inc.
+ * Copyright 2008-2025 Aerospike, Inc.
  *
  * Portions may be licensed to Aerospike, Inc. under one or more contributor
  * license agreements.
@@ -17,9 +17,9 @@
 #pragma once
 
 #include <aerospike/as_cdt_order.h>
+#include <aerospike/as_list.h>
 #include <aerospike/as_vector.h>
 #include <aerospike/as_val.h>
-//#include <aerospike/as_exp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,6 +32,9 @@ extern "C" {
 /**
  * Nested CDT context type.
  *
+ * Note that AS_CDT_CTX_VALUE is a flag (currently, bit 1) within each of the
+ * enumeration variants, indicating which variants are to be considered values.
+ *
  * @relates as_operations
  * @ingroup base_operations
  */
@@ -43,9 +46,13 @@ typedef enum {
 	AS_CDT_CTX_MAP_INDEX = 0x20,
 	AS_CDT_CTX_MAP_RANK = 0x21,
 	AS_CDT_CTX_MAP_KEY = 0x22,
-	AS_CDT_CTX_MAP_VALUE = 0x23
+	AS_CDT_CTX_MAP_VALUE = 0x23,
+	AS_CDT_CTX_MAP_KEY_IN_LIST = 0x2a
 } as_cdt_ctx_type;
 
+/**
+ * Flag indicating whether or not a AS_CDT_CTX_xxx variant is a value.
+ */
 #define AS_CDT_CTX_VALUE 0x2
 
 /**
@@ -81,12 +88,12 @@ typedef struct as_cdt_ctx {
 /**
  * Initialize a stack allocated nested CDT context list.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * Lookup last list in list of lists.
  * as_cdt_ctx ctx;
  * as_cdt_ctx_inita(&ctx, 1);
  * as_cdt_ctx_add_list_index(&ctx, -1);
- * ~~~~~~~~~~
+ * @endcode
  *
  * Call as_cdt_ctx_destroy() when done with the context list if any context levels contain
  * a heap allocated as_val instance.  If in doubt, call as_cdt_ctx_destroy().
@@ -102,6 +109,36 @@ typedef struct as_cdt_ctx {
 //---------------------------------
 // Functions
 //---------------------------------
+
+/**
+ * Answer true if the CDT context is "empty".  Empty is defined as one of three
+ * conditions: (1) the context pointer itself is null, (2) the pointer is non-
+ * null but the structure is not properly initialized, and (3) the context is
+ * initialized but has yet to receive an expression (see as_cdt_ctx_add_*
+ * functions).
+ */
+static inline bool
+cdt_ctx_is_empty(as_cdt_ctx* ctx) {
+	// If ctx is NULL, we consider it empty.
+	if (ctx == NULL) {
+		return true;
+	}
+
+	// If ctx is not NULL, but has not been properly initialized,
+	// we consider it empty.
+	if (ctx->list.list == NULL) {
+		return true;
+	}
+
+	// If ctx is properly initialized but has zero elements in its list,
+	// we consider it empty.
+	if (ctx->list.size == 0) {
+		return true;
+	}
+
+	// Otherwise, the context has at least one expression in it.
+	return false;
+}
 
 /**
  * Initialize a stack allocated nested CDT context list, with item storage on the heap.
@@ -287,6 +324,15 @@ as_cdt_ctx_add_map_key_create(as_cdt_ctx* ctx, as_val* key, as_map_order order)
 	as_vector_append(&ctx->list, &item);
 }
 
+static inline void
+as_cdt_ctx_add_map_key_in_list(as_cdt_ctx* ctx, as_list* list)
+{
+	as_cdt_ctx_item item;
+	item.type = AS_CDT_CTX_MAP_KEY_IN_LIST;
+	item.val.pval = (as_val*)list;
+	as_vector_append(&ctx->list, &item);
+}
+
 /**
  * Lookup map by value.  The ctx list takes ownership of val.
  *
@@ -305,20 +351,30 @@ as_cdt_ctx_add_map_value(as_cdt_ctx* ctx, as_val* val)
 /**
  * Add all to select ctx.
  *
- * @relates as_operations
- * @ingroup base_operations
- */
-AS_EXTERN void
-as_cdt_ctx_add_all(as_cdt_ctx* ctx);
-
-/**
- * Add expr to select ctx.  The ctx does NOT take ownership of exp.
+ * At the current context, causes a query to return a list of all the children
+ * of the current item. For a map, this will recurse into the map elements,
+ * for a list this will include all the children in the list.
  *
  * @relates as_operations
  * @ingroup base_operations
  */
 AS_EXTERN void
-as_cdt_ctx_add_exp(as_cdt_ctx* ctx, const struct as_exp* exp);
+as_cdt_ctx_add_all_children(as_cdt_ctx* ctx);
+
+/**
+ * Add expr to select ctx.  The ctx does NOT take ownership of exp.
+ * The passed expression must return a boolean.
+ *
+ * All children of the current level will be selected, and then the filter expression
+ * is applied to each item in turn.  Items that cause the expression to evaluate to true will be added to the
+ * list of items returned in a query for this level.  Items that cause the expression to evaluate to false
+ * will be filtered out
+ *
+ * @relates as_operations
+ * @ingroup base_operations
+ */
+AS_EXTERN void
+as_cdt_ctx_add_all_children_with_filter(as_cdt_ctx* ctx, const struct as_exp* exp);
 
 /**
  * Return exact serialized size of ctx. Return zero on error.
