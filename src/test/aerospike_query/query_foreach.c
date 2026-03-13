@@ -64,9 +64,9 @@ static uint64_t g_epochns;
 #define LUA_FILE AS_START_DIR "src/test/lua/client_stream_simple.lua"
 #define UDF_FILE "client_stream_simple"
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "query_foreach"
-#define NAMESPACE_INFO "namespace/test"
+#define NAMESPACE_INFO "namespace/testY"
 
 bool namespace_has_persistence = false;
 bool namespace_in_memory = false;

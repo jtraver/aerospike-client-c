@@ -44,7 +44,7 @@ extern bool g_has_ttl;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "test_operate"
 
 /******************************************************************************

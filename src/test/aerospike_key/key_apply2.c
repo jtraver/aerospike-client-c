@@ -45,7 +45,7 @@ extern bool g_has_ttl;
 /******************************************************************************
  * MACROS
  *****************************************************************************/
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "test_apply2"
 
 #define LUA_FILE AS_START_DIR "src/test/lua/key_apply2.lua"

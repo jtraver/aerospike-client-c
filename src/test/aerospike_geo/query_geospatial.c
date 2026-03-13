@@ -51,7 +51,7 @@ static int g_n_keys = 20;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "query_geo"
 #define SET2 "query_geo_points"
 #define SET3 "query_geo_regions"

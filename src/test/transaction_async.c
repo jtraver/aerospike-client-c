@@ -40,7 +40,7 @@ static as_monitor monitor;
 // Macros
 //---------------------------------
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "txn"
 #define BIN "a"
 #define LUA_FILE AS_START_DIR "src/test/lua/udf_record.lua"

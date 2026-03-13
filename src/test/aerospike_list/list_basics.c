@@ -52,7 +52,7 @@ extern void example_dump_record(const as_record* p_rec);
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "test_cdt"
 #define BIN_NAME "test-list-1"
 

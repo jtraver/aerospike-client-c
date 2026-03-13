@@ -374,7 +374,7 @@ static bool before(atf_plan* plan)
 	}
 
 	char command[1024];
-	snprintf(command, sizeof(command), "get-config:context=namespace;%s=test", ns_field_name);
+	snprintf(command, sizeof(command), "get-config:context=namespace;%s=testY", ns_field_name);
 
 	status = aerospike_info_node(as, &err, NULL, node, command, &result);
 	as_node_release(node);
@@ -419,7 +419,7 @@ static bool before(atf_plan* plan)
 
 	// Determine if namespace is configured as strong consistency.
 	as_cluster* cluster = as->cluster;
-	const char* ns = "test";
+	const char* ns = "testY";
 
 	if (cluster->shm_info) {
 		as_cluster_shm* cluster_shm = cluster->shm_info->cluster_shm;

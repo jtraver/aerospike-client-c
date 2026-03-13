@@ -54,7 +54,7 @@ extern bool g_has_ttl;
 #define LUA_FILE AS_START_DIR "src/test/lua/query_background.lua"
 #define UDF_FILE "query_background"
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "test_query"
 
 /******************************************************************************

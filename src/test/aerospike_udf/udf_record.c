@@ -48,7 +48,7 @@ extern aerospike* as;
 // Macros
 //---------------------------------
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "query_bg"
 
 #define LUA_FILE AS_START_DIR "src/test/lua/udf_record.lua"

@@ -46,7 +46,7 @@ extern aerospike* as;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "testselect"
 #define BIN_NAME "m"
 

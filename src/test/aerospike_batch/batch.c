@@ -40,7 +40,7 @@
 // Globals
 //---------------------------------
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "test_batch"
 #define LIST_BIN "listbin"
 #define N_KEYS 200

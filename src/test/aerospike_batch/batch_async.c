@@ -35,7 +35,7 @@ static as_monitor monitor;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "batchasync"
 #define LIST_BIN "listbin"
 #define N_KEYS 200

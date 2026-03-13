@@ -44,7 +44,7 @@ extern aerospike *as;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "map_udf"
 
 #define LUA_FILE AS_START_DIR "src/test/lua/udf_record.lua"

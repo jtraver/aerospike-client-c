@@ -33,7 +33,7 @@ extern aerospike* as;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "test_bit"
 #define BIN_NAME "bitbin"
 

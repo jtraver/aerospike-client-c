@@ -48,7 +48,7 @@ static int responses[10];
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "pipe"
 
 #define set_error_message(result, fmt, ...) \

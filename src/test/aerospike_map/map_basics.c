@@ -52,7 +52,7 @@ extern aerospike *as;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "testmap"
 #define BIN_NAME "testmap"
 #define RAND_STR_LEN (26 + 26 + 1)

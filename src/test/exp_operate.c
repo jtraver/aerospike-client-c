@@ -31,7 +31,7 @@ extern aerospike* as;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "test_expop"
 
 static char* AString = "A";

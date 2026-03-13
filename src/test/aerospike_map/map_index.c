@@ -38,7 +38,7 @@ extern aerospike *as;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "map_index"
 
 typedef struct {

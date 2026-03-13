@@ -47,7 +47,7 @@ static as_monitor monitor;
  * MACROS
  *****************************************************************************/
 
-#define NAMESPACE "test"
+#define NAMESPACE "testY"
 #define SET "asyncmap"
 #define BIN_NAME "testmap"
 
