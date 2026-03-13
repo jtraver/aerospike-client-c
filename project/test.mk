@@ -11,6 +11,7 @@ TEST_AEROSPIKE += aerospike_info/*.c
 TEST_AEROSPIKE += aerospike_key/*.c
 TEST_AEROSPIKE += aerospike_list/*.c
 TEST_AEROSPIKE += aerospike_map/*.c
+TEST_AEROSPIKE += aerospike_cdt/*.c
 TEST_AEROSPIKE += aerospike_query/*.c
 TEST_AEROSPIKE += aerospike_scan/*.c
 TEST_AEROSPIKE += aerospike_udf/*.c
@@ -77,7 +78,7 @@ ifeq ($(EVENT_LIB),libevent)
   TEST_LDFLAGS += -levent_core -levent_pthreads
 endif
 
-TEST_LDFLAGS += -lssl -lcrypto -lpthread -lm -lz $(LINK_SUFFIX)
+TEST_LDFLAGS += -lssl -lcrypto -lpthread -lyaml -lm -lz $(LINK_SUFFIX)
 
 AS_HOST := 127.0.0.1
 AS_PORT := 3000
