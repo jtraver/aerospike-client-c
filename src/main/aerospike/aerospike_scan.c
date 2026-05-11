@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2025 Aerospike, Inc.
+ * Copyright 2008-2026 Aerospike, Inc.
  *
  * Portions may be licensed to Aerospike, Inc. under one or more contributor
  * license agreements.
@@ -18,6 +18,7 @@
 #include <aerospike/aerospike_info.h>
 #include <aerospike/as_async.h>
 #include <aerospike/as_command.h>
+#include <aerospike/as_config_file.h>
 #include <aerospike/as_exp.h>
 #include <aerospike/as_job.h>
 #include <aerospike/as_key.h>
@@ -34,9 +35,15 @@
 #include <citrusleaf/cf_clock.h>
 #include <citrusleaf/cf_queue.h>
 
-/******************************************************************************
- * TYPES
- *****************************************************************************/
+//---------------------------------
+// Imports
+//---------------------------------
+
+extern bool as_op_is_write[];
+
+//---------------------------------
+// Types
+//---------------------------------
 
 typedef struct as_scan_task_s {
 	as_node* node;
@@ -89,6 +96,7 @@ typedef struct as_scan_builder {
 	as_node_partitions* np;
 	as_buffer argbuffer;
 	as_queue* opsbuffers;
+	as_cluster* cluster;
 	uint64_t max_records;
 	size_t size;
 	uint32_t task_id_offset;
@@ -99,9 +107,9 @@ typedef struct as_scan_builder {
 	uint16_t n_fields;
 } as_scan_builder;
 
-/******************************************************************************
- * STATIC FUNCTIONS
- *****************************************************************************/
+//---------------------------------
+// Static Functions
+//---------------------------------
 
 static inline void
 as_scan_log_iter(uint64_t parent_id, uint64_t task_id, uint32_t iter)
@@ -385,11 +393,16 @@ as_scan_parse_records(as_error* err, as_command* cmd, as_node* node, uint8_t* bu
 
 static as_status
 as_scan_command_size(
-	const as_policy_scan* policy, const as_scan* scan, as_scan_builder* sb, as_error* err
-	)
+	const as_policy_scan* policy, const as_scan* scan, as_scan_builder* sb, as_error* err)
 {
 	sb->size = AS_HEADER_SIZE;
 	uint16_t n_fields = 0;
+
+	// Providing bin names (via .select) and operations to perform (via .ops) at the same time is not allowed.
+	if (scan->select.size > 0 && as_operations_defined(scan->ops)) {
+		// This will become an AEROSPIKE_ERR_PARAM error in the next major release of the client.
+		as_log_warn("Operations and bin names are mutually exclusive.");
+	}
 
 	if (sb->np) {
 		sb->parts_full_size = sb->np->parts_full.size * 2;
@@ -464,11 +477,35 @@ as_scan_command_size(
 
 	sb->n_fields = n_fields;
 
-	// Operations (used in background scans) and bin names (used in foreground scans)
-	// are mutually exclusive.
-	if (scan->ops) {
-		// Estimate size for background operations.
+	// Operations and bin names are mutually exclusive.
+	if (as_operations_defined(scan->ops)) {
+		// Estimate size for operations (both foreground and background).
 		as_operations* ops = scan->ops;
+		bool has_write = as_operations_has_write(ops);
+		bool all_writes = as_operations_consists_of_all_writes(ops);
+		bool is_foreground_scan = sb->pt != NULL;
+
+		if (is_foreground_scan && !has_write) {
+			for (uint16_t i = 0; i < ops->binops.size; i++) {
+				if (!as_operations_is_basic_read(ops->binops.entries[i].op)) {
+					if (!sb->cluster->has_query_ops_projection_ext) {
+						return as_error_set_message(err, AEROSPIKE_ERR_PARAM,
+								"Only basic read operations are supported for scan operations projection in server versions prior to 8.1.2.");
+					}
+					else {
+						break;
+					}
+				}
+			}
+		}
+		else if (is_foreground_scan && has_write) {
+			return as_error_set_message(err, AEROSPIKE_ERR_PARAM,
+					"Scan operations must be read-only. Use background scan for write-only operations.");
+		}
+		else if (!is_foreground_scan && !all_writes) {
+			return as_error_set_message(err, AEROSPIKE_ERR_PARAM,
+					"Background scan operations must be write-only. Use scan for read-only operations.");
+		}
 
 		for (uint16_t i = 0; i < ops->binops.size; i++) {
 			as_binop* op = &ops->binops.entries[i];
@@ -497,17 +534,41 @@ as_scan_command_init(
 	uint16_t n_ops = (scan->ops) ? scan->ops->binops.size : scan->select.size;
 	uint8_t* p;
 
-	if (scan->ops) {
-		// Background scan with operations.
-		uint32_t ttl = (scan->ttl)? scan->ttl : scan->ops->ttl;
+	if (as_operations_defined(scan->ops)) {
+		// Check if this is a foreground scan with operations (read operations only)
+		bool has_write_ops = false;
 
-		if (ttl == AS_RECORD_CLIENT_DEFAULT_TTL) {
-			ttl = policy->ttl;
+		for (uint16_t i = 0; i < scan->ops->binops.size; i++) {
+			as_binop* op = &scan->ops->binops.entries[i];
+			if (as_op_is_write[op->op]) {
+				has_write_ops = true;
+				break; // No need to check further once we find a write op
+			}
 		}
 
-		p = as_command_write_header_write(cmd, &policy->base, AS_POLICY_COMMIT_LEVEL_ALL,
-				AS_POLICY_EXISTS_IGNORE, AS_POLICY_GEN_IGNORE, 0, ttl, sb->n_fields, n_ops,
-				policy->durable_delete, false, 0, AS_MSG_INFO2_WRITE, 0);
+		if (has_write_ops) {
+			// Background scan with write operations.
+			uint32_t ttl = (scan->ttl)? scan->ttl : scan->ops->ttl;
+
+			if (ttl == AS_RECORD_CLIENT_DEFAULT_TTL) {
+				ttl = policy->ttl;
+			}
+
+			p = as_command_write_header_write(cmd, &policy->base, AS_POLICY_COMMIT_LEVEL_ALL,
+					AS_POLICY_EXISTS_IGNORE, AS_POLICY_GEN_IGNORE, 0, ttl, sb->n_fields, n_ops,
+					policy->durable_delete, false, 0, AS_MSG_INFO2_WRITE, 0);
+		} else {
+			// Foreground scan with read operations.
+			uint8_t read_attr = AS_MSG_INFO1_READ;
+
+			if (scan->no_bins) {
+				read_attr |= AS_MSG_INFO1_GET_NOBINDATA;
+			}
+
+			p = as_command_write_header_read(cmd, &policy->base, AS_POLICY_READ_MODE_AP_ONE,
+					AS_POLICY_READ_MODE_SC_SESSION, -1, policy->base.total_timeout, sb->n_fields, n_ops,
+					read_attr, 0, AS_MSG_INFO3_PARTITION_DONE);
+		}
 	}
 	else if (scan->apply_each.function[0]) {
 		// Background scan with UDF.
@@ -595,7 +656,7 @@ as_scan_command_init(
 		p = as_command_write_field_uint64(p, AS_FIELD_MAX_RECORDS, sb->max_records);
 	}
 
-	if (scan->ops) {
+	if (as_operations_defined(scan->ops)) {
 		as_operations* ops = scan->ops;
 
 		for (uint16_t i = 0; i < ops->binops.size; i++) {
@@ -636,7 +697,7 @@ as_scan_command_execute(as_scan_task* task)
 
 	as_queue opsbuffers;
 
-	if (task->scan->ops) {
+	if (as_operations_defined(task->scan->ops)) {
 		as_queue_inita(&opsbuffers, sizeof(as_buffer), task->scan->ops->binops.size);
 	}
 
@@ -652,10 +713,12 @@ as_scan_command_execute(as_scan_task* task)
 		sb.max_records = 0;
 	}
 
+	sb.cluster = task->cluster;
+
 	status = as_scan_command_size(task->policy, task->scan, &sb, &err);
 
 	if (status != AEROSPIKE_OK) {
-		if (task->scan->ops) {
+		if (as_operations_defined(task->scan->ops)) {
 			as_buffers_destroy(&opsbuffers);
 		}
 
@@ -674,6 +737,8 @@ as_scan_command_execute(as_scan_task* task)
 	cmd.policy = &task->policy->base;
 	cmd.node = task->node;
 	cmd.key = NULL;       // Not referenced when node set.
+	// Must use global namespace due to reference equality logic in as_node_add_latency().
+	cmd.ns = as_partition_tables_get_ns(task->cluster, task->scan->ns);
 	cmd.partition = NULL; // Not referenced when node set.
 	cmd.parse_results_fn = as_scan_parse_records;
 	cmd.udata = task;
@@ -777,19 +842,22 @@ as_scan_generic(
 
 	// Initialize task.
 	uint32_t error_mutex = 0;
-	as_scan_task task;
-	task.np = NULL;
-	task.pt = NULL;
-	task.cluster = cluster;
-	task.policy = policy;
-	task.scan = scan;
-	task.callback = callback;
-	task.udata = udata;
-	task.err = err;
-	task.error_mutex = &error_mutex;
-	task.task_id = task_id;
-	task.cluster_key = cluster_key;
-	task.first = true;
+	as_scan_task task = {
+		.node = NULL,
+		.np = NULL,
+		.pt = NULL,
+		.cluster = cluster,
+		.policy = policy,
+		.scan = scan,
+		.callback = callback,
+		.udata = udata,
+		.err = err,
+		.complete_q = NULL,
+		.error_mutex = &error_mutex,
+		.task_id = task_id,
+		.cluster_key = cluster_key,
+		.first = true
+	};
 
 	if (scan->concurrent) {
 		uint32_t n_wait_nodes = nodes->size;
@@ -896,18 +964,21 @@ as_scan_partitions(
 
 		// Initialize task.
 		uint32_t error_mutex = 0;
-		as_scan_task task;
-		task.pt = pt;
-		task.cluster = cluster;
-		task.policy = policy;
-		task.scan = scan;
-		task.callback = callback;
-		task.udata = udata;
-		task.err = err;
-		task.error_mutex = &error_mutex;
-		task.task_id = task_id;
-		task.cluster_key = 0;
-		task.first = false;
+		as_scan_task task = {
+			.node = NULL,
+			.np = NULL,
+			.pt = pt,
+			.cluster = cluster,
+			.policy = policy,
+			.scan = scan,
+			.callback = callback,
+			.udata = udata,
+			.err = err,
+			.error_mutex = &error_mutex,
+			.task_id = task_id,
+			.cluster_key = 0,
+			.first = false
+		};
 
 		if (scan->concurrent && n_nodes > 1) {
 			uint32_t n_wait_nodes = n_nodes;
@@ -996,6 +1067,9 @@ as_scan_partition_execute_async(as_async_scan_executor* se, as_partition_tracker
 	as_event_executor* ee = &se->executor;
 	uint32_t n_nodes = pt->node_parts.size;
 
+	// Must use global namespace due to reference equality logic in as_node_add_latency().
+	const char*	global_ns = as_partition_tables_get_ns(se->cluster, se->executor.ns);
+
 	for (uint32_t i = 0; i < n_nodes; i++) {
 		as_node_partitions* np = as_vector_get(&pt->node_parts, i);
 		uint32_t parts_full_size = np->parts_full.size * 2;
@@ -1071,8 +1145,10 @@ as_scan_partition_execute_async(as_async_scan_executor* se, as_partition_tracker
 		p += se->cmd_size_post;
 		size = as_command_write_end(cmd->buf, p);
 
-		cmd->total_deadline = pt->total_timeout;
+		cmd->total_timeout = pt->total_timeout;
+		cmd->connect_timeout = pt->connect_timeout;
 		cmd->socket_timeout = pt->socket_timeout;
+		cmd->timeout_delay = pt->timeout_delay;
 		cmd->max_retries = 0;
 		cmd->iteration = 0;
 		cmd->replica = AS_POLICY_REPLICA_MASTER;
@@ -1082,7 +1158,7 @@ as_scan_partition_execute_async(as_async_scan_executor* se, as_partition_tracker
 		// Reserve node because as_event_command_free() will release node
 		// on command completion.
 		as_node_reserve(cmd->node);
-		cmd->ns = NULL;
+		cmd->ns = global_ns;
 		cmd->partition = NULL;
 		cmd->udata = se;  // Overload udata to be the executor.
 		cmd->parse_results = as_scan_parse_records_async;
@@ -1195,7 +1271,7 @@ as_scan_partition_async(
 
 	as_queue opsbuffers;
 
-	if (scan->ops) {
+	if (as_operations_defined(scan->ops)) {
 		as_queue_inita(&opsbuffers, sizeof(as_buffer), scan->ops->binops.size);
 	}
 
@@ -1211,10 +1287,12 @@ as_scan_partition_async(
 	sb.opsbuffers = &opsbuffers;
 	sb.max_records = 0;
 
+	sb.cluster = cluster;
+
 	status = as_scan_command_size(policy, scan, &sb, err);
 
 	if (status != AEROSPIKE_OK) {
-		if (scan->ops) {
+		if (as_operations_defined(scan->ops)) {
 			as_buffers_destroy(&opsbuffers);
 		}
 		as_partition_tracker_destroy(pt);
@@ -1260,9 +1338,54 @@ as_scan_partition_async(
 	return as_scan_partition_execute_async(se, pt, err);
 }
 
-/******************************************************************************
- * FUNCTIONS
- *****************************************************************************/
+//---------------------------------
+// Scan Policy
+//---------------------------------
+
+static const as_policy_scan*
+as_policy_scan_merge(aerospike* as, const as_policy_scan* src, as_policy_scan* mrg)
+{
+	if (!src) {
+		as_config* config = aerospike_load_config(as);
+		return &config->policies.scan;
+	}
+	else if (as->config_bitmap) {
+		uint8_t* bitmap = as->config_bitmap;
+		as_config* config = aerospike_load_config(as);
+		as_policy_scan* cfg = &config->policies.scan;
+
+		mrg->base.connect_timeout = as_field_is_set(bitmap, AS_SCAN_CONNECT_TIMEOUT)?
+			cfg->base.connect_timeout : src->base.connect_timeout;
+		mrg->base.socket_timeout = as_field_is_set(bitmap, AS_SCAN_SOCKET_TIMEOUT)?
+			cfg->base.socket_timeout : src->base.socket_timeout;
+		mrg->base.total_timeout = as_field_is_set(bitmap, AS_SCAN_TOTAL_TIMEOUT)?
+			cfg->base.total_timeout : src->base.total_timeout;
+		mrg->base.timeout_delay = as_field_is_set(bitmap, AS_SCAN_TIMEOUT_DELAY)?
+			cfg->base.timeout_delay : src->base.timeout_delay;
+		mrg->base.max_retries = as_field_is_set(bitmap, AS_SCAN_MAX_RETRIES)?
+			cfg->base.max_retries : src->base.max_retries;
+		mrg->base.sleep_between_retries = as_field_is_set(bitmap, AS_SCAN_SLEEP_BETWEEN_RETRIES)?
+			cfg->base.sleep_between_retries : src->base.sleep_between_retries;
+		mrg->replica = as_field_is_set(bitmap, AS_SCAN_REPLICA)?
+			cfg->replica : src->replica;
+
+		mrg->base.filter_exp = src->base.filter_exp;
+		mrg->base.txn = src->base.txn;
+		mrg->base.compress = src->base.compress;
+		mrg->max_records = src->max_records;
+		mrg->records_per_second = src->records_per_second;
+		mrg->ttl = src->ttl;
+		mrg->durable_delete = src->durable_delete;
+		return mrg;
+	}
+	else {
+		return src;
+	}
+}
+
+//---------------------------------
+// Functions
+//---------------------------------
 
 bool
 as_async_scan_should_retry(as_event_command* cmd, as_status status)
@@ -1278,9 +1401,8 @@ aerospike_scan_background(
 	uint64_t* scan_id
 	)
 {
-	if (! policy) {
-		policy = &as->config.policies.scan;
-	}
+	as_policy_scan merged;
+	policy = as_policy_scan_merge(as, policy, &merged);
 
 	return as_scan_generic(as->cluster, err, policy, scan, 0, 0, scan_id);
 }
@@ -1328,9 +1450,8 @@ aerospike_scan_foreach(
 	aerospike_scan_foreach_callback callback, void* udata
 	)
 {
-	if (! policy) {
-		policy = &as->config.policies.scan;
-	}
+	as_policy_scan merged;
+	policy = as_policy_scan_merge(as, policy, &merged);
 
 	as_cluster* cluster = as->cluster;
 	uint32_t n_nodes;
@@ -1341,8 +1462,12 @@ aerospike_scan_foreach(
 	}
 
 	as_partition_tracker pt;
-	as_partition_tracker_init_nodes(&pt, cluster, &policy->base, policy->max_records,
-		policy->replica, &scan->parts_all, scan->paginate, n_nodes);
+	status = as_partition_tracker_init_nodes(&pt, cluster, &policy->base, policy->max_records,
+		policy->replica, &scan->parts_all, scan->paginate, n_nodes, err);
+
+	if (status != AEROSPIKE_OK) {
+		return status;
+	}
 
 	status = as_scan_partitions(cluster, err, policy, scan, &pt, callback, udata);
 
@@ -1359,9 +1484,8 @@ aerospike_scan_node(
 	const char* node_name, aerospike_scan_foreach_callback callback, void* udata
 	)
 {
-	if (! policy) {
-		policy = &as->config.policies.scan;
-	}
+	as_policy_scan merged;
+	policy = as_policy_scan_merge(as, policy, &merged);
 
 	as_cluster* cluster = as->cluster;
 
@@ -1380,8 +1504,13 @@ aerospike_scan_node(
 	}
 
 	as_partition_tracker pt;
-	as_partition_tracker_init_node(&pt, cluster, &policy->base, policy->max_records,
-		policy->replica, &scan->parts_all, scan->paginate, node);
+	status = as_partition_tracker_init_node(&pt, cluster, &policy->base, policy->max_records,
+		policy->replica, &scan->parts_all, scan->paginate, node, err);
+
+	if (status != AEROSPIKE_OK) {
+		as_node_release(node);
+		return status;
+	}
 
 	status = as_scan_partitions(cluster, err, policy, scan, &pt, callback, udata);
 
@@ -1401,9 +1530,8 @@ aerospike_scan_partitions(
 {
 	as_cluster* cluster = as->cluster;
 
-	if (! policy) {
-		policy = &as->config.policies.scan;
-	}
+	as_policy_scan merged;
+	policy = as_policy_scan_merge(as, policy, &merged);
 
 	uint32_t n_nodes;
 	as_status status = as_scan_partitions_validate(cluster, err, policy, scan, &n_nodes);
@@ -1439,9 +1567,8 @@ aerospike_scan_async(
 	uint64_t* scan_id, as_async_scan_listener listener, void* udata, as_event_loop* event_loop
 	)
 {
-	if (! policy) {
-		policy = &as->config.policies.scan;
-	}
+	as_policy_scan merged;
+	policy = as_policy_scan_merge(as, policy, &merged);
 
 	as_status status = as_scan_validate(err, policy, scan);
 
@@ -1458,8 +1585,12 @@ aerospike_scan_async(
 	}
 
 	as_partition_tracker* pt = cf_malloc(sizeof(as_partition_tracker));
-	as_partition_tracker_init_nodes(pt, cluster, &policy->base, policy->max_records,
-		policy->replica, &scan->parts_all, scan->paginate, n_nodes);
+	status = as_partition_tracker_init_nodes(pt, cluster, &policy->base, policy->max_records,
+		policy->replica, &scan->parts_all, scan->paginate, n_nodes, err);
+
+	if (status != AEROSPIKE_OK) {
+		return status;
+	}
 
 	return as_scan_partition_async(cluster, err, policy, scan, pt, listener, udata, event_loop);
 }
@@ -1471,9 +1602,8 @@ aerospike_scan_node_async(
 	as_event_loop* event_loop
 	)
 {
-	if (! policy) {
-		policy = &as->config.policies.scan;
-	}
+	as_policy_scan merged;
+	policy = as_policy_scan_merge(as, policy, &merged);
 
 	as_status status = as_scan_validate(err, policy, scan);
 
@@ -1491,8 +1621,12 @@ aerospike_scan_node_async(
 	}
 
 	as_partition_tracker* pt = cf_malloc(sizeof(as_partition_tracker));
-	as_partition_tracker_init_node(pt, cluster, &policy->base, policy->max_records,
-		policy->replica, &scan->parts_all, scan->paginate, node);
+	status = as_partition_tracker_init_node(pt, cluster, &policy->base, policy->max_records,
+		policy->replica, &scan->parts_all, scan->paginate, node, err);
+
+	if (status != AEROSPIKE_OK) {
+		as_node_release(node);
+	}
 
 	status = as_scan_partition_async(cluster, err, policy, scan, pt, listener, udata,
 									 event_loop);
@@ -1511,9 +1645,8 @@ aerospike_scan_partitions_async(
 {
 	as_cluster* cluster = as->cluster;
 
-	if (! policy) {
-		policy = &as->config.policies.scan;
-	}
+	as_policy_scan merged;
+	policy = as_policy_scan_merge(as, policy, &merged);
 
 	uint32_t n_nodes;
 	as_status status = as_scan_partitions_validate(cluster, err, policy, scan, &n_nodes);

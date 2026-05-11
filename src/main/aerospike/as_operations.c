@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2022 Aerospike, Inc.
+ * Copyright 2008-2026 Aerospike, Inc.
  *
  * Portions may be licensed to Aerospike, Inc. under one or more contributor
  * license agreements.
@@ -17,14 +17,46 @@
 #include <aerospike/as_operations.h>
 #include <aerospike/as_cdt_internal.h>
 #include <aerospike/as_bin.h>
+<<<<<<< HEAD
 #include <aerospike/as_exp.h>
+=======
+#include <aerospike/as_cdt_internal.h>
+#include <aerospike/as_error.h>
+#include <aerospike/as_exp.h>
+#include <aerospike/as_status.h>
+>>>>>>> master
 #include <citrusleaf/alloc.h>
 
 #include "_bin.h"
 
-/******************************************************************************
- * STATIC FUNCTIONS
- *****************************************************************************/
+//---------------------------------
+// Global Variables
+//---------------------------------
+
+// These values must line up with as_operator enum.
+bool as_op_is_write[] = {
+	false,
+	true,
+	false,
+	true,
+	false,
+	true,
+	true,
+	false,
+	true,
+	true,
+	true,
+	true,
+	false,
+	true,
+	true,
+	false,
+	true
+};
+
+//---------------------------------
+// Static Functions
+//---------------------------------
 
 static as_operations*
 as_operations_default(as_operations* ops, bool free, uint16_t nops)
@@ -91,10 +123,9 @@ as_binop_append(as_operations* ops, as_operator operator)
 	return true;
 }
 
-
-/******************************************************************************
- * FUNCTIONS
- *****************************************************************************/
+//---------------------------------
+// Functions
+//---------------------------------
 
 as_operations*
 as_operations_init(as_operations* ops, uint16_t nops)
@@ -126,7 +157,7 @@ as_operations_destroy(as_operations* ops)
 		cf_free(ops->binops.entries);
 	}
 
-	// reset values 
+	// reset values
 	ops->binops._free = false;
 	ops->binops.capacity = 0;
 	ops->binops.size = 0;
@@ -281,17 +312,28 @@ as_operations_add_delete(as_operations* ops)
 	return as_binop_append(ops, AS_OPERATOR_DELETE);
 }
 
+<<<<<<< HEAD
 bool
 as_operations_cdt_select(as_operations* ops, const char* name, as_cdt_ctx* ctx, uint32_t flags)
 {
 	if (ctx == NULL) {
 		return false;
+=======
+as_status
+as_operations_select_by_path(
+		as_error* err,
+		as_operations* ops, const char* name, as_cdt_ctx* ctx, as_exp_path_select_flags flags)
+{
+	if (cdt_ctx_is_empty(ctx)) {
+		return as_error_set_message(err, AEROSPIKE_ERR_PARAM, "Context is empty");
+>>>>>>> master
 	}
 
 	as_packer pk = as_cdt_begin();
 	as_pack_list_header(&pk, 3);
 	as_pack_uint64(&pk, AS_CDT_OP_CONTEXT_SELECT);
 	as_cdt_ctx_pack(ctx, &pk);
+<<<<<<< HEAD
 	as_pack_uint64(&pk, flags);
 	as_cdt_end(&pk);
 
@@ -303,15 +345,80 @@ as_operations_cdt_apply(as_operations* ops, const char* name, as_cdt_ctx* ctx, a
 {
 	if (ctx == NULL) {
 		return false;
+=======
+	// Ensure the apply flag is cleared, since no expression is provided.
+	// This avoids problems if the caller accidentally sets bit 2 in the flags field.
+	as_pack_uint64(&pk, flags & ~4);
+	as_cdt_end(&pk);
+
+	bool added = as_cdt_add_packed(&pk, ops, name, AS_OPERATOR_CDT_READ);
+	if (! added) {
+		return as_error_set_message(err, AEROSPIKE_ERR_PARAM, "Context didn't add");
+	}
+
+	return AEROSPIKE_OK;
+}
+
+as_status
+as_operations_modify_by_path(
+		as_error* err,
+		as_operations* ops, const char* name, as_cdt_ctx* ctx, as_exp* mod_exp, as_exp_path_modify_flags flags)
+{
+	if (cdt_ctx_is_empty(ctx)) {
+		return as_error_set_message(err, AEROSPIKE_ERR_PARAM, "Context is empty");
+>>>>>>> master
 	}
 
 	as_packer pk = as_cdt_begin();
 	as_pack_list_header(&pk, 4);
 	as_pack_uint64(&pk, AS_CDT_OP_CONTEXT_SELECT);
 	as_cdt_ctx_pack(ctx, &pk);
+<<<<<<< HEAD
+=======
+	// ensure the apply flag is set, since an expression must be provided.
+>>>>>>> master
 	as_pack_uint64(&pk, flags | 4);
 	as_pack_append(&pk, mod_exp->packed, mod_exp->packed_sz);
 	as_cdt_end(&pk);
 
+<<<<<<< HEAD
 	return as_cdt_add_packed(&pk, ops, name, AS_OPERATOR_CDT_MODIFY);
+=======
+	bool added = as_cdt_add_packed(&pk, ops, name, AS_OPERATOR_CDT_MODIFY);
+	if (! added) {
+		return as_error_set_message(err, AEROSPIKE_ERR_PARAM, "Context packing failed");
+	}
+
+	return AEROSPIKE_OK;
+}
+
+bool
+as_operations_has_write(const as_operations* ops)
+{
+	if (!ops) {
+		return false;
+	}
+
+	for (uint16_t i = 0; i < ops->binops.size; i++) {
+		if (as_op_is_write[ops->binops.entries[i].op]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool
+as_operations_consists_of_all_writes(const as_operations* ops)
+{
+	if (!ops) {
+		return false;
+	}
+
+	for (uint16_t i = 0; i < ops->binops.size; i++) {
+		if (!as_op_is_write[ops->binops.entries[i].op]) {
+			return false;
+		}
+	}
+	return true;
+>>>>>>> master
 }

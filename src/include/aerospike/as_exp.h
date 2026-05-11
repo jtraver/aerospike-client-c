@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2024 Aerospike, Inc.
+ * Copyright 2008-2026 Aerospike, Inc.
  *
  * Portions may be licensed to Aerospike, Inc. under one or more contributor
  * license agreements.
@@ -35,7 +35,7 @@
  * (as_policy_base contained in as_policy_read, as_policy_write, ...).
  *
  * Example:
- * ~~~~~~~~~~{.c}
+ * @code
  * as_exp_build(filter,
  *   as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(10)));
  *
@@ -44,7 +44,7 @@
  * p.filter_exp = filter;
  * ...
  * as_exp_destroy(filter);
- * ~~~~~~~~~~
+ * @endcode
  */
 
 #include <aerospike/as_bit_operations.h>
@@ -60,9 +60,9 @@
 extern "C" {
 #endif
 
-/******************************************************************************
- * TYPES
- *****************************************************************************/
+//---------------------------------
+// Types
+//---------------------------------
 
 typedef enum {
 	_AS_EXP_CODE_UNKNOWN = 0,
@@ -76,6 +76,7 @@ typedef enum {
 
 	_AS_EXP_CODE_CMP_REGEX = 7,
 	_AS_EXP_CODE_CMP_GEO = 8,
+	_AS_EXP_CODE_IN_LIST = 9,
 
 	_AS_EXP_CODE_AND = 16,
 	_AS_EXP_CODE_OR = 17,
@@ -126,9 +127,17 @@ typedef enum {
 	_AS_EXP_CODE_BIN = 81,
 	_AS_EXP_CODE_BIN_TYPE = 82,
 
+<<<<<<< HEAD
 	_AS_EXP_CODE_RESULT_REMOVE = 100,
 
 	_AS_EXP_CODE_VAR_BUILTIN = 122,
+=======
+	_AS_EXP_CODE_REMOVE_RESULT = 100,
+	_AS_EXP_CODE_MAP_KEYS = 101,
+	_AS_EXP_CODE_MAP_VALUES = 102,
+
+	_AS_EXP_CODE_LOOPVAR = 122,
+>>>>>>> master
 
 	_AS_EXP_CODE_COND = 123,
 	_AS_EXP_CODE_VAR = 124,
@@ -186,10 +195,17 @@ typedef enum {
 } as_exp_type;
 
 typedef enum {
+<<<<<<< HEAD
 	AS_EXP_BUILTIN_KEY = 0,
 	AS_EXP_BUILTIN_VALUE = 1,
 	AS_EXP_BUILTIN_INDEX = 2
 } as_exp_var_builtin_type;
+=======
+	AS_EXP_LOOPVAR_KEY = 0,
+	AS_EXP_LOOPVAR_VALUE = 1,
+	AS_EXP_LOOPVAR_INDEX = 2
+} as_exp_loopvar_type;
+>>>>>>> master
 
 typedef struct as_exp {
 	uint32_t packed_sz;
@@ -218,21 +234,22 @@ typedef struct {
 	} v;
 } as_exp_entry;
 
-/*********************************************************************************
- * PRIVATE FUNCTIONS
- *********************************************************************************/
+//---------------------------------
+// Private Functions
+//---------------------------------
 
 AS_EXTERN as_exp* as_exp_compile(as_exp_entry* table, uint32_t n);
 AS_EXTERN char* as_exp_compile_b64(as_exp* exp);
 AS_EXTERN void as_exp_destroy_b64(char* b64);
 AS_EXTERN uint8_t* as_exp_write(as_exp* exp, uint8_t* ptr);
+AS_EXTERN uint8_t* as_exp_write_index(as_exp* exp, uint8_t* ptr);
 AS_EXTERN int64_t as_exp_get_ctx_type(const as_cdt_ctx* ctx, as_exp_type default_type);
 AS_EXTERN int64_t as_exp_get_list_type(as_exp_type default_type, as_list_return_type rtype, bool is_multi);
 AS_EXTERN int64_t as_exp_get_map_type(as_exp_type type, as_map_return_type rtype, bool is_multi);
 
-/*********************************************************************************
- * PUBLIC FUNCTIONS
- *********************************************************************************/
+//---------------------------------
+// Public Functions
+//---------------------------------
 
 /**
  * Encode expression to null-terminated base64 string.
@@ -272,9 +289,9 @@ as_exp_destroy_base64(char* base64)
 	as_exp_destroy_b64(base64);
 }
 
-/*********************************************************************************
- * VALUE EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Value Expressions
+//---------------------------------
 
 /**
  * Create an 'unknown' value. Used to intentionally fail an expression.
@@ -282,7 +299,7 @@ as_exp_destroy_base64(char* base64)
  * AS_EXP_READ_NO_FAIL.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // If var("v") (bin("balance") - 100.0) is greater that or equal to 0.0 then
  * // return var("v") else fail operation.
  * as_exp_build(expression,
@@ -292,7 +309,7 @@ as_exp_destroy_base64(char* base64)
  *         as_exp_cond(
  *             as_exp_ge(as_exp_var("v"), as_exp_float(0)), as_exp_var("v"),
  *             as_exp_unknown())));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (unknown value)
  * @ingroup expression
@@ -382,19 +399,19 @@ as_exp_destroy_base64(char* base64)
  */
 #define as_exp_wildcard() as_exp_val(&as_cmp_wildcard)
 
-/*********************************************************************************
- * KEY EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Key Expressions
+//---------------------------------
 
 /**
  * Create expression that returns the key as an integer. Returns 'unknown' if
  * the key is not an integer.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer record key >= 10000
  * as_exp_build(expression,
  *     as_exp_cmp_ge(as_exp_key_int(), as_exp_int(10000)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) Integer value of the key if the key is an integer.
  * @ingroup expression
@@ -406,11 +423,11 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns the key as an string. Returns 'unknown' if
  * the key is not a string.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // String record key == "aaa"
  * as_exp_build(expression,
  *     as_exp_cmp_eq(as_exp_key_str(), as_exp_str("aaa")));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (string value) String value of the key if the key is a string.
  * @ingroup expression
@@ -422,12 +439,12 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns the key as an blob. Returns 'unknown' if
  * the key is not an blob.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Blob record key <= { 0x65, 0x65 }
  * uint8_t val[] = {0x65, 0x65}
  * as_exp_build(expression,
  *     as_exp_cmp_le(as_exp_key_blob(), as_exp_bytes(val, sizeof(val))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (blob value) Blob value of the key if the key is a blob.
  * @ingroup expression
@@ -440,19 +457,19 @@ as_exp_destroy_base64(char* base64)
  * data as a boolean expression. This would occur when "as_policy_write.key" is
  * AS_POLICY_KEY_SEND on record write.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Key exists in record meta data
  * as_exp_build(expression, as_exp_key_exists());
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (boolean value) True if the record has a stored key, false otherwise.
  * @ingroup expression
  */
 #define as_exp_key_exist() {.op=_AS_EXP_CODE_KEY_EXIST, .count=1}
 
-/*********************************************************************************
- * BIN EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Bin Expressions
+//---------------------------------
 
 #define _AS_EXP_VAL_RAWSTR(__val) {.op=_AS_EXP_CODE_VAL_RAWSTR, .v.str_val=__val}
 
@@ -460,10 +477,10 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a boolean value. Returns 'unknown'
  * if the bin is not a boolean.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Check if the value in bin "a" is true.
  * as_exp_build(expression, as_exp_bin_bool("a"));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (boolean bin)
@@ -478,11 +495,11 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a signed integer. Returns 'unknown'
  * if the bin is not an integer.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" == 200
  * as_exp_build(expression,
  *     as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(200)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (integer bin)
@@ -497,11 +514,11 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a float. Returns 'unknown' if the bin
  * is not an float.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Float bin "a" >= 2.71
  * as_exp_build(expression,
  *     as_exp_cmp_ge(as_exp_bin_int("a"), as_exp_float(2.71)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (float bin)
@@ -516,11 +533,11 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a string. Returns 'unknown' if the
  * bin is not an string.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // String bin "a" == "b"
  * as_exp_build(expression,
  *     as_exp_cmp_eq(as_exp_bin_str("a"), as_exp_str("b")));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (string bin)
@@ -535,12 +552,12 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a blob. Returns 'unknown' if the bin
  * is not an blob.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" == { 0x65, 0x65 }
  * uint8_t val[] = {0x65, 0x65}
  * as_exp_build(expression,
  *     as_exp_cmp_eq(as_exp_bin_blob("a"), as_exp_bytes(val, sizeof(val))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (blob bin)
@@ -555,11 +572,11 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a geojson. Returns 'unknown' if the
  * bin is not geojson.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // GeoJSON bin "a" contained by GeoJSON bin "b"
  * as_exp_build(expression,
  *     as_exp_cmp_geo(as_exp_bin_geo("a"), as_exp_bin_geo("b")));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (geojson bin)
@@ -574,14 +591,14 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a list. Returns 'unknown' if the bin
  * is not an list.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // List bin "a" contains at least one item == "abc"
  * as_exp_build(filter,
  *     as_exp_cmp_gt(
  *         as_exp_list_get_by_value(NULL, AS_LIST_RETURN_COUNT,
  *             as_exp_str("abc"), as_exp_bin_list("a")),
  *         as_exp_int(0)));
-  * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (list bin)
@@ -596,12 +613,12 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a map. Returns 'unknown' if the bin
  * is not an map.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Map bin "a" size > 7.
  * as_exp_build(expression,
  *     as_exp_cmp_gt(as_exp_map_size(NULL, as_exp_bin_map("a")),
  *     as_exp_int(7)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (map bin)
@@ -616,12 +633,12 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns a bin as a HyperLogLog (hll). Returns
  * 'unknown' if the bin is not a HyperLogLog (hll).
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // HLL bin "a" have an hll_count > 1000000
  * as_exp_build(expression,
  *     as_exp_cmp_gt(as_exp_hll_get_count(AS_BIN_HLL("a")),
  *          as_exp_int(1000000)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (hll bin)
@@ -635,10 +652,10 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create expression that returns if bin of specified name exists.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Bin "a" exists in record.
  * as_exp_build(expression, as_exp_bin_exists("a"));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (boolean value) True if the bin exists, false otherwise.
@@ -650,11 +667,11 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create expression that returns the type of a bin as a integer.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // bin "a" == type.string
  * as_exp_build(expression,
  *     as_exp_cmp_eq(as_exp_bin_type("a"), as_exp_int(AS_BYTES_STRING)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __bin_name			Bin name.
  * @return (integer value) returns the bin_type as an as_bytes_type.
@@ -664,19 +681,19 @@ as_exp_destroy_base64(char* base64)
 		{.op=_AS_EXP_CODE_BIN_TYPE, .count=2}, \
 		_AS_EXP_VAL_RAWSTR(__bin_name)
 
-/*********************************************************************************
- * METADATA EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Metadata Expressions
+//---------------------------------
 
 /**
  * Create expression that returns record set name string. This expression usually
  * evaluates quickly because record meta data is cached in memory.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Record set name == "myset"
  * as_exp_build(expression,
  *     as_exp_cmp_eq(as_exp_set_name(), as_exp_str("myset")));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (string value) Name of the set this record belongs to.
  * @ingroup expression
@@ -690,11 +707,11 @@ as_exp_destroy_base64(char* base64)
  * Requires server version 7.0+. This expression replaces as_exp_device_size() and
  * as_exp_memory_size().
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Record size >= 100 KB
  * as_exp_build(expression,
  * 		as_exp_cmp_ge(as_exp_record_size(), as_exp_int(100 * 1024)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) Uncompressed size of the record.
  * @ingroup expression
@@ -707,13 +724,15 @@ as_exp_destroy_base64(char* base64)
  * because record meta data is cached in memory.
  *
  * This expression should only be used for server versions less than 7.0. Use
- * as_exp_record_size() for server version 7.0+.
+ * `as_exp_record_size()` for server version 7.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @deprecated Use `as_exp_record_size()` instead.
+ *
+ * @code
  * // Record device size >= 100 KB
  * as_exp_build(expression,
  * 		as_exp_cmp_ge(as_exp_device_size(), as_exp_int(100 * 1024)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) Uncompressed storage size of the record.
  * @ingroup expression
@@ -724,11 +743,11 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns record last update time expressed as 64 bit
  * integer nanoseconds since 1970-01-01 epoch.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Record last update time >= 2020-01-15
  * as_exp_build(expression,
  * 		as_exp_cmp_ge(as_exp_last_update(), as_exp_uint(1577836800)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) When the record was last updated.
  * @ingroup expression
@@ -740,12 +759,12 @@ as_exp_destroy_base64(char* base64)
  * This expression usually evaluates quickly because record meta data is cached
  * in memory.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Record last updated more than 2 hours ago
  * as_exp_build(expression,
  *     as_exp_cmp_gt(as_exp_since_update(),
  *         as_exp_int(2 * 60 * 60 * 1000)))
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) Number of milliseconds since last updated.
  * @ingroup expression
@@ -756,13 +775,13 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns record expiration time expressed as 64 bit
  * integer nanoseconds since 1970-01-01 epoch.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Record expires on 2021-01-01
  * as_exp_build(expression,
  *     as_exp_and(
  *         as_exp_cmp_ge(as_exp_void_time(), as_exp_int(1609459200)),
  *         as_exp_cmp_lt(as_exp_void_time(), as_exp_int(1609545600))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) Expiration time in nanoseconds since 1970-01-01.
  * @ingroup expression
@@ -773,11 +792,11 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns record expiration time (time to live) in integer
  * seconds.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Record expires in less than 1 hour
  * as_exp_build(expression,
  *     as_exp_cmp_lt(as_exp_ttl(), as_exp_int(60 * 60)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) Number of seconds till the record will expire,
  *                         returns -1 if the record never expires.
@@ -795,10 +814,10 @@ as_exp_destroy_base64(char* base64)
  * work with normal filtering of records because the tombstone record will be filtered
  * out before this expression is evaluated.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Deleted records that are in tombstone state.
  * as_exp_build(expression, as_exp_is_tombstone());
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (boolean value) True if the record is a tombstone, false otherwise.
  * @ingroup expression
@@ -812,13 +831,15 @@ as_exp_destroy_base64(char* base64)
  * in memory.
  *
  * Requires server version between 5.3 inclusive and 7.0 exclusive.
- * Use as_exp_record_size() for server version 7.0+.
+ * Use `as_exp_record_size()` for server version 7.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @deprecated Use `as_exp_record_size()` instead.
+ *
+ * @code
  * // Record memory size >= 100 KB
  * as_exp_build(expression,
  * 		as_exp_cmp_ge(as_exp_memory_size(), as_exp_int(100 * 1024)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value) memory size of the record.
  * @ingroup expression
@@ -828,11 +849,11 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create expression that returns record digest modulo as integer.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Records that have digest(key) % 3 == 1
  * as_exp_build(expression,
  * 		as_exp_cmp_eq(as_exp_digest_modulo(3), as_exp_int(1)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __mod			Divisor used to divide the digest to get a remainder.
  * @return (integer value) Value in range 0 and mod (exclusive)..
@@ -842,17 +863,17 @@ as_exp_destroy_base64(char* base64)
 		{.op=_AS_EXP_CODE_DIGEST_MODULO, .count=2}, \
 		as_exp_int(__mod)
 
-/*********************************************************************************
- * COMPARISON EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Comparison Expressions
+//---------------------------------
 
 /**
  * Create equals (==) expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" == 11.
  * as_exp_build(expression, as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(11)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __left			left expression in comparison.
  * @param __right			right expression in comparison.
@@ -865,11 +886,11 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create not equal (!=) expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" != 13.
  * as_exp_build(expression, as_exp_cmp_ne(as_exp_bin_int("a"), as_exp_int(13)));
 
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __left			left expression in comparison.
  * @param __right			right expression in comparison.
@@ -882,10 +903,10 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create a greater than (>) expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" > 8.
  * as_exp_build(expression, as_exp_cmp_gt(as_exp_bin_int("a"), as_exp_int(8)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __left			left expression in comparison.
  * @param __right			right expression in comparison.
@@ -898,10 +919,10 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create a greater than or equals (>=) expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" >= 88.
  * as_exp_build(expression, as_exp_cmp_ge(as_exp_bin_int("a"), as_exp_int(88)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __left			left expression in comparison.
  * @param __right			right expression in comparison.
@@ -914,10 +935,10 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create a less than (<) expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" < 1000.
  * as_exp_build(expression, as_exp_cmp_lt(as_exp_bin_int("a"), as_exp_int(1000)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __left			left expression in comparison.
  * @param __right			right expression in comparison.
@@ -930,10 +951,10 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create a less than or equals (<=) expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Integer bin "a" <= 1.
  * as_exp_build(expression, as_exp_cmp_le(as_exp_bin_int("a"), as_exp_int(1)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __left			left expression in comparison.
  * @param __right			right expression in comparison.
@@ -944,15 +965,79 @@ as_exp_destroy_base64(char* base64)
 		{.op=_AS_EXP_CODE_CMP_LE, .count=3}, __left, __right
 
 /**
+ * True if the value of @a __left is contained in @a __list (by value).
+ *
+ * @a __left may be any expression. @a __list must be an @c as_list (for example
+ * @c as_arraylist). The list is serialized when the expression is compiled; the
+ * caller retains ownership of @a __list and should destroy it after @c as_exp_build.
+ *
+ * @code
+ * as_arraylist* lst = as_arraylist_new(3, 3);
+ * as_arraylist_append_str(lst, "red");
+ * as_arraylist_append_str(lst, "blue");
+ * as_arraylist_append_str(lst, "green");
+ *
+ * as_exp_build(e1, as_exp_in_list(as_exp_bin_str("color"), as_exp_val((as_val*)lst));
+ * as_exp_build(e2, as_exp_in_list(as_exp_bin_str("color"), as_exp_bin_list("palette"));
+ *
+ * as_arraylist_destroy(lst);
+ * @endcode
+ *
+ * @param __left	Value expression to test for membership.
+ * @param __list	Expression that evaluates to a list of values to search.
+ * @return (boolean value)
+ * @ingroup expression
+ */
+#define as_exp_in_list(__left, __list) \
+		{.op=_AS_EXP_CODE_IN_LIST, .count=3}, __left, __list
+
+/**
+ * Return a list of keys from a map-valued subexpression.
+ *
+ * @a __map must evaluate to a map, for example @c as_exp_bin_map("name") for a
+ * map bin, or @c as_exp_val((as_val*)m) for a literal @c as_map / @c as_orderedmap.
+ * Literal maps are serialized at compile time; the caller retains ownership and
+ * should destroy them after @c as_exp_build.
+ *
+ * @code
+ * as_orderedmap m;
+ * as_orderedmap_init(&m, 2);
+ * as_orderedmap_set(&m, (as_val*)as_string_new((char*)"k", false),
+ *     (as_val*)as_integer_new(1));
+ * as_exp_build(e, as_exp_map_keys(as_exp_val((as_val*)&m)));
+ * as_exp_destroy(e);
+ * as_orderedmap_destroy(&m);
+ * @endcode
+ *
+ * @param __map	Map-valued expression (e.g. bin or constant).
+ * @return (list value)
+ * @ingroup expression
+ */
+#define as_exp_map_keys(__map) \
+		{.op=_AS_EXP_CODE_MAP_KEYS, .count=2}, __map
+
+/**
+ * Return a list of values from a map-valued subexpression.
+ *
+ * @a __map must evaluate to a map; see @ref as_exp_map_keys for operand forms.
+ *
+ * @param __map	Map-valued expression (e.g. bin or constant).
+ * @return (list value)
+ * @ingroup expression
+ */
+#define as_exp_map_values(__map) \
+		{.op=_AS_EXP_CODE_MAP_VALUES, .count=2}, __map
+
+/**
  * Create expression that performs a regex match on a string bin or value
  * expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Select string bin "a" that starts with "prefix" and ends with "suffix".
  * // Ignore case and do not match newline.
  * as_exp_build(expression,
  *     as_exp_cmp_regex(REG_ICASE | REG_NEWLINE, as_exp_str("prefix.*suffix"), as_exp_bin_str("a")));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __options			POSIX regex flags defined in regex.h.
  * @param __regex_str		POSIX regex string.
@@ -968,11 +1053,11 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create a point within region or region contains point expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Geo bin "point" is within geo bin "region".
  * as_exp_build(expression,
  *     as_exp_cmp_geo(as_exp_bin_geo("point"), as_exp_bin_geo("region")));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __left			left expression in comparison.
  * @param __right			right expression in comparison.
@@ -982,20 +1067,20 @@ as_exp_destroy_base64(char* base64)
 #define as_exp_cmp_geo(__left, __right) \
 		{.op=_AS_EXP_CODE_CMP_GEO, .count=3}, __left, __right
 
-/*********************************************************************************
- * LOGICAL EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Logical Expressions
+//---------------------------------
 
 /**
  * Create "not" (!) operator expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // ! (a == 0 || a == 10)
  * as_exp_build(expression,
  *     as_exp_not(as_exp_or(
  *         as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(0)),
  *         as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(10)))));
-  * ~~~~~~~~~~
+  * @endcode
  *
  * @param __expr			Boolean expression to negate.
  * @return (boolean value)
@@ -1006,7 +1091,7 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create "and" (&&) operator that applies to a variable number of expressions.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // (a > 5 || a == 0) && b < 3
  * as_exp_build(expression,
  *     as_exp_and(
@@ -1014,7 +1099,7 @@ as_exp_destroy_base64(char* base64)
  *             as_exp_cmp_gt(as_exp_bin_int("a"), as_exp_int(5)),
  *             as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(0)))
  *         as_exp_cmp_lt(as_exp_bin_int("b"), as_exp_int(3))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of boolean expressions.
  * @return (boolean value)
@@ -1026,13 +1111,13 @@ as_exp_destroy_base64(char* base64)
 /**
  * Create "or" (||) operator that applies to a variable number of expressions.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a == 0 || b == 0
  * as_exp_build(expression,
  *     as_exp_or(
  *         as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(0)),
  *         as_exp_cmp_eq(as_exp_bin_int("b"), as_exp_int(0))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of boolean expressions.
  * @return (boolean value)
@@ -1045,13 +1130,13 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns true if only one of the expressions are true.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // exclusive(a == 0, b == 0)
  * as_exp_build(expression,
  *     as_exp_exclusive(
  *         as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(0)),
  *         as_exp_cmp_eq(as_exp_bin_int("b"), as_exp_int(0))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of boolean expressions.
  * @return (boolean value)
@@ -1060,9 +1145,9 @@ as_exp_destroy_base64(char* base64)
 #define as_exp_exclusive(...) {.op=_AS_EXP_CODE_EXCLUSIVE}, __VA_ARGS__, \
 		{.op=_AS_EXP_CODE_END_OF_VA_ARGS}
 
-/*********************************************************************************
- * ARITHMETIC EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Arithmetic Expressions
+//---------------------------------
 
 /**
  * Create "add" (+) operator that applies to a variable number of expressions.
@@ -1070,13 +1155,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must be the same type (integer or float).
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a + b + c == 10
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_add(as_exp_bin_int("a"), as_exp_bin_int("b"), as_exp_bin_int("c")),
  *         as_exp_int(10)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer or float expressions.
  * @return (integer or float value)
@@ -1092,13 +1177,13 @@ as_exp_destroy_base64(char* base64)
  * argument. All arguments must resolve to the same type (integer or float).
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a - b - c > 10
  * as_exp_build(expression,
  *     as_exp_cmp_gt(
  *         as_exp_sub(as_exp_bin_int("a"), as_exp_bin_int("b"), as_exp_bin_int("c")),
  *         as_exp_int(10)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer or float expressions.
  * @return (integer or float value)
@@ -1113,13 +1198,13 @@ as_exp_destroy_base64(char* base64)
  * that argument. All arguments must resolve to the same type (integer or float).
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a * b * c < 100
  * as_exp_build(expression,
  *     as_exp_cmp_lt(
  *         as_exp_mul(as_exp_bin_int("a"), as_exp_bin_int("b"), as_exp_bin_int("c")),
  *         as_exp_int(100)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer or float expressions.
  * @return (integer or float value)
@@ -1135,13 +1220,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must resolve to the same type (integer or float).
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a / b / c == 1
  * as_exp_build(expression,
  *     as_exp_cmp_gt(
  *         as_exp_div(as_exp_bin_int("a"), as_exp_bin_int("b"), as_exp_bin_int("c")),
  *         as_exp_int(1)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer or float expressions.
  * @return (integer or float value)
@@ -1155,13 +1240,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must resolve to floats.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // pow(a, 2.0) == 4.0
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_pow(as_exp_bin_float("a"), as_exp_float(2.0)),
  *         as_exp_float(4.0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __base		Base value.
  * @param __exponent	Exponent value.
@@ -1176,13 +1261,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must resolve to floats.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // log(a, 2) == 4.0
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_log(as_exp_bin_float("a"), as_exp_float(2.0)),
  *         as_exp_float(4.0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __num			Number.
  * @param __base		Base value.
@@ -1197,13 +1282,13 @@ as_exp_destroy_base64(char* base64)
  * divided by "denominator". All arguments must resolve to integers.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a % 10 == 0
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_mod(as_exp_bin_int("a"), as_exp_int(10)),
  *         as_exp_int(0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value)
  * @ingroup expression
@@ -1216,13 +1301,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must resolve to integer or float.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // abs(a) == 1
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_abs(as_exp_bin_int("a")),
  *         as_exp_int(1)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (number value)
  * @ingroup expression
@@ -1234,13 +1319,13 @@ as_exp_destroy_base64(char* base64)
  * Create expression that rounds a floating point number down to the closest integer value.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // floor(2.95) == 2.0
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_floor(as_exp_float(2.95)),
  *         as_exp_float(2.0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __num			Floating point value to round down.
  * @return (float-value)
@@ -1253,13 +1338,13 @@ as_exp_destroy_base64(char* base64)
  * Create expression that rounds a floating point number up to the closest integer value.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // ceil(2.15) == 3.0
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_ceil(as_exp_float(2.15)),
  *         as_exp_float(3.0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __num			Floating point value to round up.
  * @return (integer-value)
@@ -1272,13 +1357,13 @@ as_exp_destroy_base64(char* base64)
  * Create expression that converts a float to an integer.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // int(2.5) == 2
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_to_int(as_exp_float(2.5)),
  *         as_exp_int(2)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __num			Integer to convert to a float
  * @return (float-value)
@@ -1291,13 +1376,13 @@ as_exp_destroy_base64(char* base64)
  * Create expression that converts an integer to a float.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // float(2) == 2.0
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_to_float(as_exp_int(2)),
  *         as_exp_int(2.0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __num			Integer to convert to a float
  * @return (float-value)
@@ -1311,13 +1396,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must resolve to integers.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a & 0xff == 0x11
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_int_and(as_exp_bin_int("a"), as_exp_int(0xff)),
  *         as_exp_int(0x11)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer expressions.
  * @return (integer value)
@@ -1331,13 +1416,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must resolve to integers.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a | 0x10 != 0
  * as_exp_build(expression,
  *     as_exp_cmp_ne(
  *         as_exp_int_or(as_exp_bin_int("a"), as_exp_int(0x10)),
  *         as_exp_int(0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer expressions.
  * @return (integer value)
@@ -1351,13 +1436,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must resolve to integers.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a ^ b == 16
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_int_xor(as_exp_bin_int("a"), as_exp_bin_int("b")),
  *         as_exp_int(16)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer expressions.
  * @return (integer value)
@@ -1370,13 +1455,13 @@ as_exp_destroy_base64(char* base64)
  * Create integer "not" (~) operator.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // ~a == 7
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_int_not(as_exp_bin_int("a")),
  *         as_exp_int(7)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __expr		Integer expression.
  * @return (integer value)
@@ -1389,13 +1474,13 @@ as_exp_destroy_base64(char* base64)
  * Create integer "left shift" (<<) operator.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a << 8 > 0xff
  * as_exp_build(expression,
  *     as_exp_cmp_gt(
  *         as_exp_int_lshift(as_exp_bin_int("a"), as_exp_int(8)),
  *         as_exp_int(0xff)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __value		Integer expression.
  * @param __shift		Number of bits to shift by.
@@ -1409,13 +1494,13 @@ as_exp_destroy_base64(char* base64)
  * Create integer "logical right shift" (>>>) operator.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a >>> 8 > 0xff
  * as_exp_build(expression,
  *     as_exp_cmp_gt(
  *         as_exp_int_rshift(as_exp_bin_int("a"), as_exp_int(8)),
  *         as_exp_int(0xff)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __value		Integer expression.
  * @param __shift		Number of bits to shift by.
@@ -1429,13 +1514,13 @@ as_exp_destroy_base64(char* base64)
  * Create integer "arithmetic right shift" (>>) operator.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a >> 8 > 0xff
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_int_arshift(as_exp_bin_int("a"), as_exp_int(8)),
  *         as_exp_int(0xff)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __value		Integer expression.
  * @param __shift		Number of bits to shift by.
@@ -1449,13 +1534,13 @@ as_exp_destroy_base64(char* base64)
  * Create expression that returns count of integer bits that are set to 1.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // count(a) == 4
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_int_count(as_exp_bin_int("a")),
  *         as_exp_int(4)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value)
  * @ingroup expression
@@ -1471,13 +1556,13 @@ as_exp_destroy_base64(char* base64)
  * value 1. If "search" is false it will search for bit value 0.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // lscan(a, true) == 4
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_int_lscan(as_exp_bin_int("a"), as_exp_bool(true)),
  *         as_exp_int(4)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value)
  * @ingroup expression
@@ -1493,13 +1578,13 @@ as_exp_destroy_base64(char* base64)
  * value 1. If "search" is false it will search for bit value 0.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // rscan(a, true) == 4
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_int_rscan(as_exp_bin_int("a"), as_exp_bool(true)),
  *         as_exp_int(4)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return (integer value)
  * @ingroup expression
@@ -1512,13 +1597,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must be the same type (integer or float).
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // min(a, b, c) > 0
  * as_exp_build(expression,
  *     as_exp_cmp_gt(
  *         as_exp_min(as_exp_bin_int("a"), as_exp_bin_int("b"), as_exp_bin_int("c")),
  *         as_exp_int(0)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer or float expressions.
  * @return (integer or float value)
@@ -1532,13 +1617,13 @@ as_exp_destroy_base64(char* base64)
  * All arguments must be the same type (integer or float).
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // max(a, b, c) > 100
  * as_exp_build(expression,
  *     as_exp_cmp_eq(
  *         as_exp_max(as_exp_bin_int("a"), as_exp_bin_int("b"), as_exp_bin_int("c")),
  *         as_exp_int(100)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of integer or float expressions.
  * @return (integer or float value)
@@ -1547,9 +1632,9 @@ as_exp_destroy_base64(char* base64)
 #define as_exp_max(...) {.op=_AS_EXP_CODE_MAX}, __VA_ARGS__, \
 		{.op=_AS_EXP_CODE_END_OF_VA_ARGS}
 
-/*********************************************************************************
- * FLOW CONTROL AND VARIABLE EXPRESSIONS
- *********************************************************************************/
+//--------------------------------------
+// Flow Control and Variable Expressions
+//--------------------------------------
 
 /**
  * Conditionally select an action expression from a variable number of expression pairs
@@ -1558,14 +1643,14 @@ as_exp_destroy_base64(char* base64)
  *
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * Args Format: bool exp1, action exp1, bool exp2, action exp2, ..., action-default
  *
  * // Apply operator based on type and test if greater than 100
  * as_exp_build(expression,
  *     as_exp_cmp_gt(
  *         as_exp_cond(
- *             as_exp_eq(as_exp_bin_int("type"), as_exp_int(0)), 
+ *             as_exp_eq(as_exp_bin_int("type"), as_exp_int(0)),
  *                 as_exp_add(as_exp_bin_int("val1"), as_exp_bin_int("val2")),
  *             as_exp_eq(as_exp_bin_int("type"), as_exp_int(1)),
  *                 as_exp_sub(as_exp_bin_int("val1"), as_exp_bin_int("val2")),
@@ -1573,7 +1658,7 @@ as_exp_destroy_base64(char* base64)
  *                 as_exp_mul(as_exp_bin_int("val1"), as_exp_bin_int("val2")),
  *             as_exp_int(-1)),
  *         as_exp_int(100)));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @return first action expression where bool expression is true or action-default.
  * @ingroup expression
@@ -1585,14 +1670,14 @@ as_exp_destroy_base64(char* base64)
  * Define variables and expressions in scope.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // 5 < a < 10
  * as_exp_build(expression,
  *     as_exp_let(as_exp_def("x", as_exp_bin_int("a")),
  *         as_exp_and(
  *             as_exp_lt(as_exp_int(5), as_exp_var("x")),
  *             as_exp_lt(as_exp_var("x"), as_exp_int(10)))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param ...			Variable number of as_exp_def followed by a scoped
  *  expression.
@@ -1607,14 +1692,14 @@ as_exp_destroy_base64(char* base64)
  * Assign variable to an expression that can be accessed later.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // 5 < a < 10
  * as_exp_build(expression,
  *     as_exp_let(as_exp_def("x", as_exp_bin_int("a")),
  *         as_exp_and(
  *             as_exp_lt(as_exp_int(5), as_exp_var("x")),
  *             as_exp_lt(as_exp_var("x"), as_exp_int(10)))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __var_name		Variable name.
  * @param __expr			The variable is set to the result of __expr.
@@ -1628,14 +1713,14 @@ as_exp_destroy_base64(char* base64)
  * Retrieve expression value from a variable.
  * Requires server version 5.6.0+.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // 5 < a < 10
  * as_exp_build(expression,
  *     as_exp_let(as_exp_def("x", as_exp_bin_int("a")),
  *         as_exp_and(
  *             as_exp_lt(as_exp_int(5), as_exp_var("x")),
  *             as_exp_lt(as_exp_var("x"), as_exp_int(10)))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __var_name		Variable name.
  * @return value stored in variable.
@@ -1645,11 +1730,30 @@ as_exp_destroy_base64(char* base64)
 		{.op=_AS_EXP_CODE_VAR, .count=2}, _AS_EXP_VAL_RAWSTR(__var_name)
 
 /**
+<<<<<<< HEAD
  * Retrieve expression value from a built-in variable.
+=======
+ * @private
+ * Internal macro for making new loopvar variants easier.
+ *
+ * @param __var_id  Variable ID.
+ * @param __kind    The suffix of the return type; if you write BOOL, then
+ *                  the return type will be AS_EXP_TYPE_BOOL.
+ * @ingroup expression
+ */
+#define _as_exp_loopvar_make(__var_id, __kind) \
+		{.op=_AS_EXP_CODE_LOOPVAR, .count=3}, \
+		as_exp_int(AS_EXP_TYPE_##__kind), \
+		as_exp_int(__var_id)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+>>>>>>> master
  * @param __var_id		Variable id.
  * @return value stored in variable.
  * @ingroup expression
  */
+<<<<<<< HEAD
 #define as_exp_var_builtin_map(__var_id) \
 		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
 		as_exp_int(AS_EXP_TYPE_MAP), \
@@ -1657,10 +1761,18 @@ as_exp_destroy_base64(char* base64)
 
 /**
  * Retrieve expression value from a built-in variable.
+=======
+#define as_exp_loopvar_map(__var_id) \
+		_as_exp_loopvar_make(__var_id, MAP)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+>>>>>>> master
  * @param __var_id		Variable id.
  * @return value stored in variable.
  * @ingroup expression
  */
+<<<<<<< HEAD
 #define as_exp_var_builtin_str(__var_id) \
 		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
 		as_exp_int(AS_EXP_TYPE_STR), \
@@ -1668,10 +1780,18 @@ as_exp_destroy_base64(char* base64)
 
 /**
  * Retrieve expression value from a built-in variable.
+=======
+#define as_exp_loopvar_list(__var_id) \
+		_as_exp_loopvar_make(__var_id, LIST)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+>>>>>>> master
  * @param __var_id		Variable id.
  * @return value stored in variable.
  * @ingroup expression
  */
+<<<<<<< HEAD
 #define as_exp_var_builtin_int(__var_id) \
 		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
 		as_exp_int(AS_EXP_TYPE_INT), \
@@ -1679,10 +1799,18 @@ as_exp_destroy_base64(char* base64)
 
 /**
  * Retrieve expression value from a built-in variable.
+=======
+#define as_exp_loopvar_str(__var_id) \
+		_as_exp_loopvar_make(__var_id, STR)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+>>>>>>> master
  * @param __var_id		Variable id.
  * @return value stored in variable.
  * @ingroup expression
  */
+<<<<<<< HEAD
 #define as_exp_var_builtin_float(__var_id) \
 		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
 		as_exp_int(AS_EXP_TYPE_FLOAT), \
@@ -1698,6 +1826,85 @@ as_exp_destroy_base64(char* base64)
 /*********************************************************************************
  * LIST MODIFY EXPRESSIONS
  *********************************************************************************/
+=======
+#define as_exp_loopvar_int(__var_id) \
+		_as_exp_loopvar_make(__var_id, INT)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+ * @param __var_id		Variable id.
+ * @return value stored in variable.
+ * @ingroup expression
+ */
+#define as_exp_loopvar_float(__var_id) \
+		_as_exp_loopvar_make(__var_id, FLOAT)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+ * @param __var_id		Variable id.
+ * @return value stored in variable.
+ * @ingroup expression
+ */
+#define as_exp_loopvar_blob(__var_id) \
+		_as_exp_loopvar_make(__var_id, BLOB)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+ * @param __var_id		Variable id.
+ * @return value stored in variable.
+ * @ingroup expression
+ */
+#define as_exp_loopvar_bool(__var_id) \
+		_as_exp_loopvar_make(__var_id, BOOL)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+ * @param __var_id		Variable id.
+ * @return value stored in variable.
+ * @ingroup expression
+ */
+#define as_exp_loopvar_nil(__var_id) \
+		_as_exp_loopvar_make(__var_id, NIL)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+ * @param __var_id		Variable id.
+ * @return value stored in variable.
+ * @ingroup expression
+ */
+#define as_exp_loopvar_geojson(__var_id) \
+		_as_exp_loopvar_make(__var_id, GEOJSON)
+
+/**
+ * Retrieve expression value from a path expression loop variable.
+ * @param __var_id		Variable id.
+ * @return value stored in variable.
+ * @ingroup expression
+ */
+#define as_exp_loopvar_hll(__var_id) \
+		_as_exp_loopvar_make(__var_id, HLL)
+
+/**
+ * Return a remove_result object to indicate entry deletion for cdt_apply.
+ * @return the remove_result value.
+ * @ingroup expression
+ */
+#define as_exp_remove_result() {.op=_AS_EXP_CODE_REMOVE_RESULT, .count=1}
+
+/**
+ * Return a remove_result object to indicate entry deletion for cdt_apply.
+ * This name is deprecated; please use as_exp_remove_result() going forward.
+ *
+ * @return the remove_result value.
+ * @ingroup expression
+ * @see as_exp_remove_result()
+ */
+#define as_exp_result_remove() as_exp_remove_result()
+
+//---------------------------------
+// List Modify Expressions
+//---------------------------------
+>>>>>>> master
 
 #define _AS_EXP_VAL_RTYPE(__val) {.op=_AS_EXP_CODE_VAL_RTYPE, .v.int_val=__val}
 
@@ -2017,9 +2224,9 @@ as_exp_destroy_base64(char* base64)
 		__rank, __count, \
 		__bin
 
-/*********************************************************************************
- * LIST READ EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// List Read Expressions
+//---------------------------------
 
 #define _AS_EXP_CDT_LIST_READ(__type, __rtype, __is_multi) \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
@@ -2249,9 +2456,9 @@ as_exp_destroy_base64(char* base64)
 		__rank, __count, \
 		__bin
 
-/*********************************************************************************
- * MAP MODIFY EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Map Modify Expressions
+//---------------------------------
 
 #define _AS_EXP_MAP_MOD(__ctx, __pol, __op, __param, __extra_param) \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
@@ -2355,7 +2562,7 @@ as_exp_destroy_base64(char* base64)
 		__bin
 
 /**
- * Create expression that removes map items identified by key range 
+ * Create expression that removes map items identified by key range
  * (begin inclusive, end exclusive). If begin is nil, the range is less than end.
  * If end is infinity, the range is greater than equal to begin.
  *
@@ -2591,9 +2798,9 @@ as_exp_destroy_base64(char* base64)
 		__rank, __count, \
 		__bin
 
-/*********************************************************************************
- * MAP READ EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Map Read Expressions
+//---------------------------------
 
 #define _AS_EXP_MAP_READ(__type__, __rtype, __is_multi) \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
@@ -2922,11 +3129,31 @@ as_exp_destroy_base64(char* base64)
 		__rank, __count, \
 		__bin
 
+<<<<<<< HEAD
 /*********************************************************************************
  * CDT EXPRESSIONS
  *********************************************************************************/
 
 #define as_exp_cdt_select(__ctx, __rtype, __flags, __bin) \
+=======
+//---------------------------------
+// CDT Expressions
+//---------------------------------
+
+/**
+ * Constructs a select by path operation.  This is used to retrieve a number of
+ * records or fields of records, including those of structured types.
+ *
+ * @param __ctx    Pointer to a CDT context.  This cannot be NULL, nor can
+ *                 the context be empty.
+ * @param __rtype  Return value type specifier (e.g., AS_EXP_TYPE_MAP).
+ * @param __flags  Flags (see enum as_exp_path_select_flags).
+ * @param __bin    Bin expression this select query is performed against.
+ * @return (expression)
+ * @ingroup expression
+ */
+#define as_exp_select_by_path(__ctx, __rtype, __flags, __bin) \
+>>>>>>> master
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
 		_AS_EXP_VAL_RTYPE(__rtype), \
 		as_exp_int(_AS_EXP_SYS_CALL_CDT), \
@@ -2935,7 +3162,26 @@ as_exp_destroy_base64(char* base64)
 		as_exp_int(__flags), \
 		__bin
 
+<<<<<<< HEAD
 #define as_exp_cdt_apply(__ctx, __rtype, __mod_exp, __flags, __bin) \
+=======
+/**
+ * Constructs an apply by path operation.
+ *
+ * The results of the evaluation of the modifying expression will replace the
+ * selected map and the changes written back to storage.
+ *
+ * @param __ctx      Pointer to a CDT context.  This cannot be NULL, nor can
+ *                   the context be empty.
+ * @param __rtype    Return value type specifier (e.g., AS_EXP_TYPE_MAP).
+ * @param __mod_exp  Expression to apply.
+ * @param __flags    Flags (see enum as_exp_path_modify_flags).
+ * @param __bin      Bin expression to which __mod_exp applies to.
+ * @return (expression)
+ * @ingroup expression
+ */
+#define as_exp_modify_by_path(__ctx, __rtype, __mod_exp, __flags, __bin) \
+>>>>>>> master
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
 		_AS_EXP_VAL_RTYPE(__rtype), \
 		as_exp_int(_AS_EXP_SYS_CALL_CDT | _AS_EXP_SYS_FLAG_MODIFY_LOCAL), \
@@ -2945,9 +3191,15 @@ as_exp_destroy_base64(char* base64)
 		{.op=_AS_EXP_CODE_MERGE, .v.expr=__mod_exp}, \
 		__bin
 
+<<<<<<< HEAD
 /*********************************************************************************
  * BIT MODIFY EXPRESSIONS
  *********************************************************************************/
+=======
+//---------------------------------
+// Bit Modify Expressions
+//---------------------------------
+>>>>>>> master
 
 #define _AS_EXP_BIT_MOD() \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
@@ -3251,9 +3503,9 @@ as_exp_destroy_base64(char* base64)
 		as_exp_uint(__policy ? ((as_bit_policy*)(__policy))->flags : 0), \
 		__bin
 
-/*********************************************************************************
- * BIT READ EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// Bit Read Expressions
+//---------------------------------
 
 #define _AS_EXP_BIT_READ(__rtype) \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
@@ -3346,9 +3598,9 @@ as_exp_destroy_base64(char* base64)
 		as_exp_int(__sign ? 1 : 0), \
 		__bin
 
-/*********************************************************************************
- * HLL MODIFY EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// HLL Modify Expressions
+//---------------------------------
 
 #define _AS_EXP_HLL_MOD() \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
@@ -3448,9 +3700,9 @@ as_exp_destroy_base64(char* base64)
 		as_exp_int(__policy == NULL ? 0 : ((as_hll_policy*)__policy)->flags), \
 		__bin
 
-/*********************************************************************************
- * HLL READ EXPRESSIONS
- *********************************************************************************/
+//---------------------------------
+// HLL Read Expressions
+//---------------------------------
 
 #define _AS_EXP_HLL_READ(__rtype) \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
@@ -3550,23 +3802,23 @@ as_exp_destroy_base64(char* base64)
 		__list, \
 		__bin
 
-/*********************************************************************************
- * EXPRESSION MERGE
- *********************************************************************************/
+//---------------------------------
+// Expression Merge
+//---------------------------------
 
 /**
  * Merge precompiled expression into a new expression tree.
  * Useful for storing common precompiled expressions and then reusing
  * these expressions as part of a greater expression.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // Merge precompiled expression into new expression.
  * as_exp_build(expr, as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(200)));
  * as_exp_build(merged,
  *		as_exp_and(
- *			as_exp_expr(expr), 
+ *			as_exp_expr(expr),
  *			as_exp_cmp_eq(as_exp_bin_int("b"), as_exp_int(100))));
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __e	Pre-compiled expression.
  * @ingroup expression
@@ -3574,20 +3826,20 @@ as_exp_destroy_base64(char* base64)
 #define as_exp_expr(__e) \
 	{.op=_AS_EXP_CODE_MERGE, .v.expr=__e}
 
-/*********************************************************************************
- * EXPRESSION BUILDERS
- *********************************************************************************/
+//---------------------------------
+// Expression Builders
+//---------------------------------
 
 /**
  * Declare and build an expression variable.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a == 10
  * as_exp_build(expression,
  *     as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(10)));
  * ...
  * as_exp_destroy(expression);
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __name			Name of the variable to hold the expression
  * @ingroup expression
@@ -3602,13 +3854,13 @@ as_exp_destroy_base64(char* base64)
 /**
  * Declare and build an base64 packed expression variable.
  *
- * ~~~~~~~~~~{.c}
+ * @code
  * // a == 10
  * as_exp_build_b64(expression,
  *     as_exp_cmp_eq(as_exp_bin_int("a"), as_exp_int(10)));
  * ...
  * as_exp_destroy_b64(expression);
- * ~~~~~~~~~~
+ * @endcode
  *
  * @param __name			Name of the variable to hold the expression
  * @ingroup expression

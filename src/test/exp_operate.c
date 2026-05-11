@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2023 Aerospike, Inc.
+ * Copyright 2008-2026 Aerospike, Inc.
  *
  * Portions may be licensed to Aerospike, Inc. under one or more contributor
  * license agreements.
@@ -16,9 +16,12 @@
  */
 #include <aerospike/aerospike.h>
 #include <aerospike/aerospike_key.h>
+#include <aerospike/as_arraylist.h>
 #include <aerospike/as_exp.h>
 #include <aerospike/as_exp_operations.h>
 #include "test.h"
+#include "util/log_helper.h"
+#include <string.h>
 
 /******************************************************************************
  * GLOBAL VARS
@@ -838,7 +841,11 @@ TEST(exp_select, "exp select and apply")
 
 	struct {
 		const char* title;
+<<<<<<< HEAD
 		float price;
+=======
+		double price;
+>>>>>>> master
 	} table[] = {
 			{"Sayings of the Century", 10.45},
 			{"Sword of Honour", 20.99},
@@ -871,15 +878,19 @@ TEST(exp_select, "exp select and apply")
 	rec = NULL;
 
 	// Get and check.
+<<<<<<< HEAD
 //	status = aerospike_key_get(as, &err, NULL, &keyA, &rec);
 //	assert_int_eq(status, AEROSPIKE_OK);
 //dump_record(rec);
 //	as_record_destroy(rec);
 //	rec = NULL;
+=======
+>>>>>>> master
 
 	as_cdt_ctx ctx;
 	as_cdt_ctx_inita(&ctx, 3);
 	as_cdt_ctx_add_map_key(&ctx, (as_val*)as_string_new((char*)"book", false));
+<<<<<<< HEAD
 	as_cdt_ctx_add_all(&ctx);
 	as_cdt_ctx_add_map_key(&ctx, (as_val*)as_string_new((char*)"price", false));
 
@@ -893,6 +904,22 @@ TEST(exp_select, "exp select and apply")
 
 	status = aerospike_key_operate(as, &err, NULL, &keyA, &ops, &rec);
 	assert_int_eq(status, AEROSPIKE_OK);
+=======
+	as_cdt_ctx_add_all_children(&ctx);
+	as_cdt_ctx_add_map_key(&ctx, (as_val*)as_string_new((char*)"price", false));
+
+	// Select test.
+	as_exp_build(e0, as_exp_select_by_path(&ctx, AS_EXP_TYPE_LIST,
+			AS_EXP_PATH_SELECT_MAP_VALUE, as_exp_bin_map("res1")));
+
+	as_operations ops;
+	as_operations_init(&ops, 1);
+	as_operations_exp_write(&ops, AString, e0, AS_EXP_WRITE_UPDATE_ONLY);
+
+	status = aerospike_key_operate(as, &err, NULL, &keyA, &ops, &rec);
+	assert_int_eq(status, AEROSPIKE_OK);
+	dump_record(rec);
+>>>>>>> master
 	as_operations_destroy(&ops);
 	as_record_destroy(rec);
 	rec = NULL;
@@ -900,10 +927,17 @@ TEST(exp_select, "exp select and apply")
 
 	// Apply test.
 	as_exp_build(exp_mod,
+<<<<<<< HEAD
 		as_exp_mul(as_exp_var_builtin_float(AS_EXP_BUILTIN_VALUE), as_exp_float(1.50)));
 	assert_not_null(exp_mod);
 
 	as_exp_build(e, as_exp_cdt_apply(&ctx, AS_EXP_TYPE_MAP, exp_mod, 0, as_exp_bin_map("res1")));
+=======
+		as_exp_mul(as_exp_loopvar_float(AS_EXP_LOOPVAR_VALUE), as_exp_float(1.50)));
+	assert_not_null(exp_mod);
+
+	as_exp_build(e, as_exp_modify_by_path(&ctx, AS_EXP_TYPE_MAP, exp_mod, 0, as_exp_bin_map("res1")));
+>>>>>>> master
 
 	as_operations_init(&ops, 1);
 	as_operations_exp_write(&ops, "res1", e, AS_EXP_WRITE_UPDATE_ONLY);
@@ -911,7 +945,10 @@ TEST(exp_select, "exp select and apply")
 	status = aerospike_key_operate(as, &err, NULL, &keyA, &ops, &rec);
 	assert_int_eq(status, AEROSPIKE_OK);
 	as_operations_destroy(&ops);
+<<<<<<< HEAD
 //dump_record(rec);
+=======
+>>>>>>> master
 	as_record_destroy(rec);
 	rec = NULL;
 	as_exp_destroy(exp_mod);
@@ -921,8 +958,13 @@ TEST(exp_select, "exp select and apply")
 	// Get and check.
 	status = aerospike_key_get(as, &err, NULL, &keyA, &rec);
 	assert_int_eq(status, AEROSPIKE_OK);
+<<<<<<< HEAD
 //dump_record(rec);
 	as_list* check_list = as_record_get_list(rec, "A");
+=======
+	dump_record(rec);
+	as_list* check_list = as_record_get_list(rec, AString);
+>>>>>>> master
 	assert_int_eq(as_list_size(check_list), 4);
 	assert_true(as_list_get_double(check_list, 0) < 11);
 
@@ -942,6 +984,315 @@ TEST(exp_select, "exp select and apply")
 	rec = NULL;
 }
 
+<<<<<<< HEAD
+=======
+TEST(exp_in_list, "as_exp_in_list string and int membership")
+{
+	as_error err;
+	as_status rc;
+	as_key rkey;
+	as_key_init_int64(&rkey, NAMESPACE, SET, 701);
+
+	/* Start from a clean record for this test key. */
+	rc = aerospike_key_remove(as, &err, NULL, &rkey);
+	assert_true(rc == AEROSPIKE_OK || rc == AEROSPIKE_ERR_RECORD_NOT_FOUND);
+
+	/*------------------------------------------------------------------
+	 * Fixture: bins used by the expressions below.
+	 *   "color" -> "blue"
+	 *   "qty"   -> 5
+	 *----------------------------------------------------------------*/
+	as_record rec;
+	as_record_inita(&rec, 2);
+	as_record_set_str(&rec, "color", "blue");
+	as_record_set_int64(&rec, "qty", 5);
+	rc = aerospike_key_put(as, &err, NULL, &rkey, &rec);
+	assert_int_eq(rc, AEROSPIKE_OK);
+	as_record_destroy(&rec);
+
+	as_operations ops;
+	as_record* oprec = NULL;
+	as_bin* results;
+
+	/*------------------------------------------------------------------
+	 * Case 1: "blue" in ["red", "blue", "green"]  ->  true
+	 *----------------------------------------------------------------*/
+	{
+		as_arraylist* colors = as_arraylist_new(3, 3);
+		assert_not_null(colors);
+		as_arraylist_append_str(colors, "red");
+		as_arraylist_append_str(colors, "blue");
+		as_arraylist_append_str(colors, "green");
+
+		as_exp_build(expr_blue,
+			as_exp_in_list(as_exp_bin_str("color"), as_exp_val((as_val*)colors)));
+		assert_not_null(expr_blue);
+		as_arraylist_destroy(colors);
+
+		as_operations_inita(&ops, 1);
+		as_operations_exp_read(&ops, ExpVar, expr_blue, AS_EXP_READ_DEFAULT);
+		oprec = NULL;
+		rc = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &oprec);
+		assert_int_eq(rc, AEROSPIKE_OK);
+		results = oprec->bins.entries;
+		assert_int_eq(as_bin_get_type(&results[0]), AS_BOOLEAN);
+		assert_true(as_bin_get_value(&results[0])->boolean.value);
+		as_record_destroy(oprec);
+		as_operations_destroy(&ops);
+		as_exp_destroy(expr_blue);
+	}
+
+	/*------------------------------------------------------------------
+	 * Case 2: "yellow" in ["red", "blue", "green"]  ->  false
+	 * (LHS is a literal; RHS is the same color list as case 1.)
+	 *----------------------------------------------------------------*/
+	{
+		as_arraylist* colors = as_arraylist_new(3, 3);
+		assert_not_null(colors);
+		as_arraylist_append_str(colors, "red");
+		as_arraylist_append_str(colors, "blue");
+		as_arraylist_append_str(colors, "green");
+
+		as_exp_build(expr_yellow,
+			as_exp_in_list(as_exp_str("yellow"), as_exp_val((as_val*)colors)));
+		assert_not_null(expr_yellow);
+		as_arraylist_destroy(colors);
+
+		as_operations_inita(&ops, 1);
+		as_operations_exp_read(&ops, ExpVar, expr_yellow, AS_EXP_READ_DEFAULT);
+		oprec = NULL;
+		rc = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &oprec);
+		assert_int_eq(rc, AEROSPIKE_OK);
+		results = oprec->bins.entries;
+		assert_int_eq(as_bin_get_type(&results[0]), AS_BOOLEAN);
+		assert_false(as_bin_get_value(&results[0])->boolean.value);
+		as_record_destroy(oprec);
+		as_operations_destroy(&ops);
+		as_exp_destroy(expr_yellow);
+	}
+
+	/*------------------------------------------------------------------
+	 * Case 3: 5 in [1, 5, 10]  ->  true
+	 *----------------------------------------------------------------*/
+	{
+		as_arraylist* nums = as_arraylist_new(3, 3);
+		assert_not_null(nums);
+		as_arraylist_append_int64(nums, 1);
+		as_arraylist_append_int64(nums, 5);
+		as_arraylist_append_int64(nums, 10);
+
+		as_exp_build(expr_five,
+			as_exp_in_list(as_exp_bin_int("qty"), as_exp_val((as_val*)nums)));
+		assert_not_null(expr_five);
+		as_arraylist_destroy(nums);
+
+		as_operations_inita(&ops, 1);
+		as_operations_exp_read(&ops, ExpVar, expr_five, AS_EXP_READ_DEFAULT);
+		oprec = NULL;
+		rc = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &oprec);
+		assert_int_eq(rc, AEROSPIKE_OK);
+		results = oprec->bins.entries;
+		assert_int_eq(as_bin_get_type(&results[0]), AS_BOOLEAN);
+		assert_true(as_bin_get_value(&results[0])->boolean.value);
+		as_record_destroy(oprec);
+		as_operations_destroy(&ops);
+		as_exp_destroy(expr_five);
+	}
+}
+
+TEST(exp_map_keys_values, "as_exp_map_keys and as_exp_map_values")
+{
+	as_error err;
+	as_status rc;
+	as_key rkey;
+	as_key_init_int64(&rkey, NAMESPACE, SET, 702);
+
+	/*------------------------------------------------------------------
+	 * Setup: remove any prior record for this key.
+	 *----------------------------------------------------------------*/
+	rc = aerospike_key_remove(as, &err, NULL, &rkey);
+	assert_true(rc == AEROSPIKE_OK || rc == AEROSPIKE_ERR_RECORD_NOT_FOUND);
+
+	/*------------------------------------------------------------------
+	 * Fixture: ordered map bin "m" -> { "a": 1, "b": 2 }
+	 *----------------------------------------------------------------*/
+	as_orderedmap mfix;
+	as_orderedmap_init(&mfix, 4);
+	as_orderedmap_set(&mfix, (as_val*)as_string_new((char*)"a", false),
+			(as_val*)as_integer_new(1));
+	as_orderedmap_set(&mfix, (as_val*)as_string_new((char*)"b", false),
+			(as_val*)as_integer_new(2));
+
+	as_record rec;
+	as_record_inita(&rec, 1);
+	as_record_set_map(&rec, "m", (as_map*)&mfix);
+	rc = aerospike_key_put(as, &err, NULL, &rkey, &rec);
+	assert_int_eq(rc, AEROSPIKE_OK);
+	as_record_destroy(&rec);
+
+	as_operations ops;
+	as_record* oprec = NULL;
+	as_bin* results;
+
+	/*------------------------------------------------------------------
+	 * Case 1: map_keys(as_exp_bin_map("m")) -> list containing "a", "b"
+	 *----------------------------------------------------------------*/
+	{
+		as_exp_build(expr, as_exp_map_keys(as_exp_bin_map("m")));
+		assert_not_null(expr);
+
+		as_operations_inita(&ops, 1);
+		as_operations_exp_read(&ops, ExpVar, expr, AS_EXP_READ_DEFAULT);
+		oprec = NULL;
+		rc = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &oprec);
+		assert_int_eq(rc, AEROSPIKE_OK);
+		results = oprec->bins.entries;
+		assert_int_eq(as_bin_get_type(&results[0]), AS_LIST);
+		as_list* kl = (as_list*)as_bin_get_value(&results[0]);
+		assert_int_eq(as_list_size(kl), 2);
+		bool has_a = false;
+		bool has_b = false;
+		for (uint32_t i = 0; i < (uint32_t)as_list_size(kl); i++) {
+			as_string* s = as_list_get_string(kl, i);
+			assert_not_null(s);
+			const char* p = as_string_get(s);
+			if (strcmp(p, "a") == 0) {
+				has_a = true;
+			}
+			if (strcmp(p, "b") == 0) {
+				has_b = true;
+			}
+		}
+		assert_true(has_a);
+		assert_true(has_b);
+
+		as_record_destroy(oprec);
+		as_operations_destroy(&ops);
+		as_exp_destroy(expr);
+	}
+
+	/*------------------------------------------------------------------
+	 * Case 2: map_values(as_exp_bin_map("m")) -> list containing 1, 2
+	 *----------------------------------------------------------------*/
+	{
+		as_exp_build(expr, as_exp_map_values(as_exp_bin_map("m")));
+		assert_not_null(expr);
+
+		as_operations_inita(&ops, 1);
+		as_operations_exp_read(&ops, ExpVar, expr, AS_EXP_READ_DEFAULT);
+		oprec = NULL;
+		rc = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &oprec);
+		assert_int_eq(rc, AEROSPIKE_OK);
+		results = oprec->bins.entries;
+		assert_int_eq(as_bin_get_type(&results[0]), AS_LIST);
+		as_list* vl = (as_list*)as_bin_get_value(&results[0]);
+		assert_int_eq(as_list_size(vl), 2);
+		bool has_one = false;
+		bool has_two = false;
+		for (uint32_t i = 0; i < (uint32_t)as_list_size(vl); i++) {
+			int64_t v = as_list_get_int64(vl, i);
+			if (v == 1) {
+				has_one = true;
+			}
+			if (v == 2) {
+				has_two = true;
+			}
+		}
+		assert_true(has_one);
+		assert_true(has_two);
+
+		as_record_destroy(oprec);
+		as_operations_destroy(&ops);
+		as_exp_destroy(expr);
+	}
+
+	/*------------------------------------------------------------------
+	 * Case 3: literal map — map_keys / map_values via as_exp_val
+	 *----------------------------------------------------------------*/
+	{
+		as_orderedmap* lit = as_orderedmap_new(2);
+		assert_not_null(lit);
+		as_orderedmap_set(lit, (as_val*)as_string_new((char*)"a", false),
+				(as_val*)as_integer_new(1));
+		as_orderedmap_set(lit, (as_val*)as_string_new((char*)"b", false),
+				(as_val*)as_integer_new(2));
+
+		as_exp_build(expr_k, as_exp_map_keys(as_exp_val((as_val*)lit)));
+		assert_not_null(expr_k);
+		as_orderedmap_destroy(lit);
+
+		as_operations_inita(&ops, 1);
+		as_operations_exp_read(&ops, ExpVar, expr_k, AS_EXP_READ_DEFAULT);
+		oprec = NULL;
+		rc = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &oprec);
+		assert_int_eq(rc, AEROSPIKE_OK);
+		results = oprec->bins.entries;
+		assert_int_eq(as_bin_get_type(&results[0]), AS_LIST);
+		as_list* kl = (as_list*)as_bin_get_value(&results[0]);
+		assert_int_eq(as_list_size(kl), 2);
+		bool has_a = false;
+		bool has_b = false;
+		for (uint32_t i = 0; i < (uint32_t)as_list_size(kl); i++) {
+			as_string* s = as_list_get_string(kl, i);
+			assert_not_null(s);
+			const char* p = as_string_get(s);
+			if (strcmp(p, "a") == 0) {
+				has_a = true;
+			}
+			if (strcmp(p, "b") == 0) {
+				has_b = true;
+			}
+		}
+		assert_true(has_a);
+		assert_true(has_b);
+
+		as_record_destroy(oprec);
+		as_operations_destroy(&ops);
+		as_exp_destroy(expr_k);
+	}
+
+	{
+		as_orderedmap* lit = as_orderedmap_new(2);
+		assert_not_null(lit);
+		as_orderedmap_set(lit, (as_val*)as_string_new((char*)"a", false),
+				(as_val*)as_integer_new(1));
+		as_orderedmap_set(lit, (as_val*)as_string_new((char*)"b", false),
+				(as_val*)as_integer_new(2));
+
+		as_exp_build(expr_v, as_exp_map_values(as_exp_val((as_val*)lit)));
+		assert_not_null(expr_v);
+		as_orderedmap_destroy(lit);
+
+		as_operations_inita(&ops, 1);
+		as_operations_exp_read(&ops, ExpVar, expr_v, AS_EXP_READ_DEFAULT);
+		oprec = NULL;
+		rc = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &oprec);
+		assert_int_eq(rc, AEROSPIKE_OK);
+		results = oprec->bins.entries;
+		assert_int_eq(as_bin_get_type(&results[0]), AS_LIST);
+		as_list* vl = (as_list*)as_bin_get_value(&results[0]);
+		assert_int_eq(as_list_size(vl), 2);
+		bool has_one = false;
+		bool has_two = false;
+		for (uint32_t i = 0; i < (uint32_t)as_list_size(vl); i++) {
+			int64_t v = as_list_get_int64(vl, i);
+			if (v == 1) {
+				has_one = true;
+			}
+			if (v == 2) {
+				has_two = true;
+			}
+		}
+		assert_true(has_one);
+		assert_true(has_two);
+
+		as_record_destroy(oprec);
+		as_operations_destroy(&ops);
+		as_exp_destroy(expr_v);
+	}
+}
+
+>>>>>>> master
 /******************************************************************************
  * TEST SUITE
  *****************************************************************************/
@@ -962,6 +1313,8 @@ SUITE(exp_operate, "filter expression tests")
 	suite_add(exp_returns_string);
 	suite_add(exp_returns_blob);
 	suite_add(exp_returns_bool);
+	suite_add(exp_in_list);
+	suite_add(exp_map_keys_values);
 	suite_add(exp_returns_hll);
 	suite_add(exp_merge);
 	suite_add(exp_base64);

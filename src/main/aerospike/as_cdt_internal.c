@@ -15,6 +15,7 @@
  * the License.
  */
 #include <aerospike/as_cdt_internal.h>
+#include <aerospike/as_exp.h>
 #include <citrusleaf/alloc.h>
 #include <citrusleaf/cf_byte_order.h>
 #include "_bin.h"
@@ -95,7 +96,11 @@ as_cdt_ctx_pack(const as_cdt_ctx* ctx, as_packer* pk)
 			return 0;
 		}
 
+<<<<<<< HEAD
 		if (item->type == AS_CDT_CTX_EXP) {
+=======
+		if ((item->type & ~AS_CDT_CTX_AND) == AS_CDT_CTX_EXP) {
+>>>>>>> master
 			if (as_pack_append(pk,
 					item->val.exp->packed, item->val.exp->packed_sz) != 0) {
 				return 0;
@@ -117,11 +122,11 @@ as_cdt_ctx_pack(const as_cdt_ctx* ctx, as_packer* pk)
 bool
 as_cdt_add_packed(as_packer* pk, as_operations* ops, const char* name, as_operator op_type)
 {
-	as_bytes* bytes = as_bytes_new_wrap(pk->buffer, pk->offset, true);
 	as_binop* binop = as_binop_forappend(ops, op_type, name);
 	if (! binop) {
 		return false;
 	}
+	as_bytes* bytes = as_bytes_new_wrap(pk->buffer, pk->offset, true);
 	as_bin_init(&binop->bin, name, (as_bin_value*)bytes);
 	return true;
 }
