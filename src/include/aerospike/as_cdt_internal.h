@@ -71,6 +71,7 @@ extern "C" {
 		break;\
 	}
 
+<<<<<<< HEAD
 /**
  * @private
  * Opcode used by as_exp_compile() to encode a CDT select and apply operation.
@@ -84,6 +85,9 @@ extern "C" {
  * Opcode used by as_exp_compile() to encode the calling of a virtual
  * operation.
  */
+=======
+#define AS_CDT_OP_CONTEXT_SELECT 0xfe
+>>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 #define AS_CDT_OP_CONTEXT_EVAL 0xff
 
 /******************************************************************************

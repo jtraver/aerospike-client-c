@@ -491,6 +491,7 @@ PLAN(aerospike_test)
 	plan_add(key_operate);
 
 	plan_add(list_basics);
+
 	plan_add(map_basics);
 	plan_add(select_basics);
 
@@ -501,8 +502,12 @@ PLAN(aerospike_test)
 	plan_add(bit);
 	plan_add(hll);
 	plan_add(filter_exp);
+<<<<<<< HEAD
 	plan_add(exp_basics);
 	plan_add(exp_dsl);
+=======
+
+>>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	plan_add(exp_operate);
 
 	plan_add(info_basics);
