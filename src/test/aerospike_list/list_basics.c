@@ -3255,11 +3255,7 @@ TEST(list_select, "test select")
 	// Get and check.
 	status = aerospike_key_get(as, &err, NULL, &rkey, &rec);
 	assert_int_eq(status, AEROSPIKE_OK);
-<<<<<<< HEAD
 
-=======
-//dump_record(rec);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	as_record_destroy(rec);
 	rec = NULL;
 
@@ -3269,7 +3265,6 @@ TEST(list_select, "test select")
 	as_exp_build(exp2,
 		as_exp_and(
 			as_exp_cmp_ge(
-<<<<<<< HEAD
 				as_exp_loopvar_int(AS_EXP_LOOPVAR_VALUE),
 				as_exp_int(14)),
 			as_exp_cmp_lt(
@@ -3304,34 +3299,12 @@ TEST(list_select, "test select")
 	as_cdt_ctx_add_all_children_with_filter(&ctx, exp2);
 
 	assert_int_eq(as_operations_select_by_path(&err, &ops, BIN_NAME, &ctx, 0), AEROSPIKE_OK);
-=======
-				as_exp_var_builtin_int(AS_EXP_BUILTIN_VALUE),
-				as_exp_int(14)),
-			as_exp_cmp_lt(
-				as_exp_var_builtin_int(AS_EXP_BUILTIN_VALUE),
-				as_exp_int(16))));
-
-	assert_not_null(exp1);
-
-	as_cdt_ctx ctx;
-	as_cdt_ctx_inita(&ctx, 2);
-	as_cdt_ctx_add_exp(&ctx, exp1);
-	as_cdt_ctx_add_exp(&ctx, exp2);
-
-	as_operations ops;
-	as_operations_inita(&ops, 1);
-	as_operations_cdt_select(&ops, BIN_NAME, &ctx, 0);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 	rec = NULL;
 	status = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &rec);
 	assert_int_eq(status, AEROSPIKE_OK);
 	as_operations_destroy(&ops);
-<<<<<<< HEAD
 
-=======
-//dump_record(rec);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	as_list* check0 = as_record_get_list(rec, BIN_NAME);
 	assert_not_null(check0);
 	assert_int_eq(as_list_size(check0), 20);
@@ -3360,11 +3333,7 @@ TEST(list_select2, "test select")
 
 	struct {
 		const char* title;
-<<<<<<< HEAD
 		double price;
-=======
-		float price;
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	} table[] = {
 			{"Sayings of the Century", 8.95},
 			{"Sword of Honour", 12.99},
@@ -3386,16 +3355,11 @@ TEST(list_select2, "test select")
 
 	as_orderedmap map0;
 	as_orderedmap_init(&map0, 10);
-<<<<<<< HEAD
 	as_orderedmap_set(&map0, (as_val*)as_string_new((char*)BOOKS, false), (as_val*)&list_books);
-=======
-	as_orderedmap_set(&map0, (as_val*)as_string_new((char*)"book", false), (as_val*)&list_books);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 	as_record *rec = as_record_new(1);
 	as_record_set_map(rec, BIN_NAME, (as_map*)&map0);
 	status = aerospike_key_put(as, &err, NULL, &rkey, rec);
-<<<<<<< HEAD
 
 	as_record_destroy(rec);
 	rec = NULL;
@@ -3407,18 +3371,6 @@ TEST(list_select2, "test select")
 	as_record_destroy(rec);
 	rec = NULL;
 	assert_int_eq(status, AEROSPIKE_OK);
-=======
-	assert_true(status == AEROSPIKE_OK);
-	as_record_destroy(rec);
-	rec = NULL;
-
-	// Get and check.
-	status = aerospike_key_get(as, &err, NULL, &rkey, &rec);
-	assert_int_eq(status, AEROSPIKE_OK);
-//dump_record(rec);
-	as_record_destroy(rec);
-	rec = NULL;
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 	as_exp_build(exp1,
 		as_exp_bool(true));
@@ -3427,25 +3379,16 @@ TEST(list_select2, "test select")
 	as_exp_build(exp2,
 		as_exp_cmp_le(
 			as_exp_map_get_by_key(NULL, AS_MAP_RETURN_VALUE, AS_EXP_TYPE_FLOAT, as_exp_str("price"),
-<<<<<<< HEAD
 				as_exp_loopvar_map(AS_EXP_LOOPVAR_VALUE)),
-=======
-				as_exp_var_builtin_map(AS_EXP_BUILTIN_VALUE)),
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 			as_exp_float(10.0)));
 	assert_not_null(exp2);
 
 	as_exp_build(exp3,
-<<<<<<< HEAD
 		as_exp_cmp_eq(as_exp_loopvar_str(AS_EXP_LOOPVAR_KEY), as_exp_str("title")));
-=======
-		as_exp_cmp_eq(as_exp_var_builtin_str(AS_EXP_BUILTIN_KEY), as_exp_str("title")));
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	assert_not_null(exp3);
 
 	as_cdt_ctx ctx;
 	as_cdt_ctx_inita(&ctx, 3);
-<<<<<<< HEAD
 	as_cdt_ctx_add_all_children_with_filter(&ctx, exp1);
 	as_cdt_ctx_add_all_children_with_filter(&ctx, exp2);
 	as_cdt_ctx_add_all_children_with_filter(&ctx, exp3);
@@ -3473,31 +3416,10 @@ TEST(list_select2, "test select")
 	}
 	rec = NULL;
 	as_operations_destroy(&ops);
-=======
-	as_cdt_ctx_add_exp(&ctx, exp1);
-	as_cdt_ctx_add_exp(&ctx, exp2);
-	as_cdt_ctx_add_exp(&ctx, exp3);
-
-	as_operations ops;
-	as_operations_inita(&ops, 1);
-	as_operations_cdt_select(&ops, BIN_NAME, &ctx, AS_CDT_SELECT_LEAF_MAP_VALUE);
-
-	rec = NULL;
-	status = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &rec);
-	assert_int_eq(status, AEROSPIKE_OK);
-	as_operations_destroy(&ops);
-//dump_record(rec);
-	as_list* check_list = as_record_get_list(rec, BIN_NAME);
-	assert_int_eq(as_list_size(check_list), 2);
-	assert_true(as_string_get(as_list_get_string(check_list, 0))[0] == 'S');
-	as_record_destroy(rec);
-	rec = NULL;
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	as_exp_destroy(exp1);
 	as_exp_destroy(exp2);
 	as_exp_destroy(exp3);
 	as_cdt_ctx_destroy(&ctx);
-<<<<<<< HEAD
 
 	assert_int_eq(status, AEROSPIKE_OK);
 	assert_int_eq(check_list_size, 4);
@@ -3506,11 +3428,6 @@ TEST(list_select2, "test select")
 }
 
 TEST(list_apply, "test modify/apply")
-=======
-}
-
-TEST(list_apply, "test select apply")
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 {
 	as_key rkey;
 	as_key_init_int64(&rkey, NAMESPACE, SET, 216);
@@ -3521,11 +3438,7 @@ TEST(list_apply, "test select apply")
 
 	struct {
 		const char* title;
-<<<<<<< HEAD
 		double price;
-=======
-		float price;
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	} table[] = {
 			{"Sayings of the Century", 8.95},
 			{"Sword of Honour", 12.99},
@@ -3547,11 +3460,7 @@ TEST(list_apply, "test select apply")
 
 	as_orderedmap map0;
 	as_orderedmap_init(&map0, 10);
-<<<<<<< HEAD
 	as_orderedmap_set(&map0, (as_val*)as_string_new((char*)BOOKS, false), (as_val*)&list_books);
-=======
-	as_orderedmap_set(&map0, (as_val*)as_string_new((char*)"book", false), (as_val*)&list_books);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 	as_record *rec = as_record_new(1);
 	as_record_set_map(rec, BIN_NAME, (as_map*)&map0);
@@ -3563,7 +3472,6 @@ TEST(list_apply, "test select apply")
 	// Get and check.
 	status = aerospike_key_get(as, &err, NULL, &rkey, &rec);
 	assert_int_eq(status, AEROSPIKE_OK);
-<<<<<<< HEAD
 
 	as_record_destroy(rec);
 	rec = NULL;
@@ -3599,25 +3507,6 @@ TEST(list_apply, "test select apply")
 	as_cdt_ctx_add_map_key(&ctx, (as_val*)as_string_new((char*)"price", false));
 
 	assert_int_eq(AEROSPIKE_OK, as_operations_modify_by_path(&err, &ops, BIN_NAME, &ctx, exp, 0));
-=======
-//dump_record(rec);
-	as_record_destroy(rec);
-	rec = NULL;
-
-	as_cdt_ctx ctx;
-	as_cdt_ctx_inita(&ctx, 3);
-	as_cdt_ctx_add_map_key(&ctx, (as_val*)as_string_new((char*)"book", false));
-	as_cdt_ctx_add_all(&ctx);
-	as_cdt_ctx_add_map_key(&ctx, (as_val*)as_string_new((char*)"price", false));
-
-	as_exp_build(exp,
-		as_exp_mul(as_exp_var_builtin_float(AS_EXP_BUILTIN_VALUE), as_exp_float(1.10)));
-	assert_not_null(exp);
-
-	as_operations ops;
-	as_operations_inita(&ops, 1);
-	as_operations_cdt_apply(&ops, BIN_NAME, &ctx, exp, 0);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 	rec = NULL;
 	status = aerospike_key_operate(as, &err, NULL, &rkey, &ops, &rec);
@@ -3631,19 +3520,11 @@ TEST(list_apply, "test select apply")
 	// Get and check.
 	status = aerospike_key_get(as, &err, NULL, &rkey, &rec);
 	assert_int_eq(status, AEROSPIKE_OK);
-<<<<<<< HEAD
 
 	as_map* check0 = as_record_get_map(rec, BIN_NAME);
 	assert_not_null(check0);
 	as_string book;
 	as_string_init(&book, BOOKS, false);
-=======
-//dump_record(rec);
-	as_map* check0 = as_record_get_map(rec, BIN_NAME);
-	assert_not_null(check0);
-	as_string book;
-	as_string_init(&book, "book", false);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 	as_list* check1 = (as_list*)as_map_get(check0, (as_val*)&book);
 	assert_not_null(check1);
 	as_map* check2 = as_list_get_map(check1, 0);
@@ -3656,7 +3537,6 @@ TEST(list_apply, "test select apply")
 	rec = NULL;
 }
 
-<<<<<<< HEAD
 TEST(list_apply_persist, "test select apply persist")
 {
 	as_key rkey;
@@ -4164,8 +4044,6 @@ TEST(list_exp_in_list_str, "In List String Expression")
 }
 
 
-=======
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 /******************************************************************************
  * TEST SUITE
  *****************************************************************************/
@@ -4209,7 +4087,6 @@ SUITE(list_basics, "aerospike list basic tests")
 	suite_add(list_select);
 	suite_add(list_select2);
 	suite_add(list_apply);
-<<<<<<< HEAD
 	suite_add(list_apply_persist);
 
 	suite_add(list_apply_remove);
@@ -4218,6 +4095,4 @@ SUITE(list_basics, "aerospike list basic tests")
 
 	suite_add(list_exp_in_list);
 	suite_add(list_exp_in_list_str);
-=======
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 }

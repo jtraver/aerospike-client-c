@@ -20,7 +20,6 @@
 #include <aerospike/as_list.h>
 #include <aerospike/as_vector.h>
 #include <aerospike/as_val.h>
-//#include <aerospike/as_exp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -353,18 +352,14 @@ as_cdt_ctx_add_map_value(as_cdt_ctx* ctx, as_val* val)
 /**
  * Add all to select ctx.
  *
-<<<<<<< HEAD
  * At the current context, causes a query to return a list of all the children
  * of the current item. For a map, this will recurse into the map elements,
  * for a list this will include all the children in the list.
  *
-=======
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
  * @relates as_operations
  * @ingroup base_operations
  */
 AS_EXTERN void
-<<<<<<< HEAD
 as_cdt_ctx_add_all_children(as_cdt_ctx* ctx);
 
 /**
@@ -375,18 +370,11 @@ as_cdt_ctx_add_all_children(as_cdt_ctx* ctx);
  * is applied to each item in turn.  Items that cause the expression to evaluate to true will be added to the
  * list of items returned in a query for this level.  Items that cause the expression to evaluate to false
  * will be filtered out
-=======
-as_cdt_ctx_add_all(as_cdt_ctx* ctx);
-
-/**
- * Add expr to select ctx.  The ctx does NOT take ownership of exp.
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
  *
  * @relates as_operations
  * @ingroup base_operations
  */
 AS_EXTERN void
-<<<<<<< HEAD
 as_cdt_ctx_add_all_children_with_filter(as_cdt_ctx* ctx, const struct as_exp* exp);
 
 /**
@@ -399,9 +387,6 @@ as_cdt_ctx_add_all_children_with_filter(as_cdt_ctx* ctx, const struct as_exp* ex
  */
 AS_EXTERN void
 as_cdt_ctx_add_same_level_filter(as_cdt_ctx* ctx, const struct as_exp* exp);
-=======
-as_cdt_ctx_add_exp(as_cdt_ctx* ctx, const struct as_exp* exp);
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 /**
  * Return exact serialized size of ctx. Return zero on error.

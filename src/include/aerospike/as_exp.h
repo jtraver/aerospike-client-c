@@ -128,15 +128,10 @@ typedef enum {
 	_AS_EXP_CODE_BIN_TYPE = 82,
 
 	_AS_EXP_CODE_RESULT_REMOVE = 100,
-<<<<<<< HEAD
 	_AS_EXP_CODE_MAP_KEYS = 101,
 	_AS_EXP_CODE_MAP_VALUES = 102,
 
 	_AS_EXP_CODE_LOOPVAR = 122,
-=======
-
-	_AS_EXP_CODE_VAR_BUILTIN = 122,
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 	_AS_EXP_CODE_COND = 123,
 	_AS_EXP_CODE_VAR = 124,
@@ -196,17 +191,10 @@ typedef enum {
 } as_exp_type;
 
 typedef enum {
-<<<<<<< HEAD
 	AS_EXP_LOOPVAR_KEY = 0,
 	AS_EXP_LOOPVAR_VALUE = 1,
 	AS_EXP_LOOPVAR_INDEX = 2
 } as_exp_loopvar_type;
-=======
-	AS_EXP_BUILTIN_KEY = 0,
-	AS_EXP_BUILTIN_VALUE = 1,
-	AS_EXP_BUILTIN_INDEX = 2
-} as_exp_var_builtin_type;
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 typedef struct as_exp {
 	uint32_t packed_sz;
@@ -1684,7 +1672,6 @@ as_exp_destroy_base64(char* base64)
 		{.op=_AS_EXP_CODE_VAR, .count=2}, _AS_EXP_VAL_RAWSTR(__var_name)
 
 /**
-<<<<<<< HEAD
  * @private
  * Internal macro for making new loopvar variants easier.
  *
@@ -1700,63 +1687,28 @@ as_exp_destroy_base64(char* base64)
 
 /**
  * Retrieve expression value from a path expression loop variable.
-=======
- * Retrieve expression value from a built-in variable.
  * @param __var_id		Variable id.
  * @return value stored in variable.
  * @ingroup expression
  */
-#define as_exp_var_builtin_map(__var_id) \
-		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
-		as_exp_int(AS_EXP_TYPE_MAP), \
-		as_exp_int(__var_id)
-
-/**
- * Retrieve expression value from a built-in variable.
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
- * @param __var_id		Variable id.
- * @return value stored in variable.
- * @ingroup expression
- */
-<<<<<<< HEAD
 #define as_exp_loopvar_map(__var_id) \
 		_as_exp_loopvar_make(__var_id, MAP)
 
 /**
  * Retrieve expression value from a path expression loop variable.
-=======
-#define as_exp_var_builtin_str(__var_id) \
-		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
-		as_exp_int(AS_EXP_TYPE_STR), \
-		as_exp_int(__var_id)
-
-/**
- * Retrieve expression value from a built-in variable.
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
  * @param __var_id		Variable id.
  * @return value stored in variable.
  * @ingroup expression
  */
-<<<<<<< HEAD
 #define as_exp_loopvar_list(__var_id) \
 		_as_exp_loopvar_make(__var_id, LIST)
 
 /**
  * Retrieve expression value from a path expression loop variable.
-=======
-#define as_exp_var_builtin_int(__var_id) \
-		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
-		as_exp_int(AS_EXP_TYPE_INT), \
-		as_exp_int(__var_id)
-
-/**
- * Retrieve expression value from a built-in variable.
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
  * @param __var_id		Variable id.
  * @return value stored in variable.
  * @ingroup expression
  */
-<<<<<<< HEAD
 #define as_exp_loopvar_str(__var_id) \
 		_as_exp_loopvar_make(__var_id, STR)
 
@@ -1843,23 +1795,6 @@ as_exp_destroy_base64(char* base64)
 //---------------------------------
 // List Modify Expressions
 //---------------------------------
-=======
-#define as_exp_var_builtin_float(__var_id) \
-		{.op=_AS_EXP_CODE_VAR_BUILTIN, .count=3}, \
-		as_exp_int(AS_EXP_TYPE_FLOAT), \
-		as_exp_int(__var_id)
-
-/**
- * Return a result_remove object to indicate entry deletion for cdt_apply.
- * @return the result_remove value.
- * @ingroup expression
- */
-#define as_exp_result_remove() {.op=_AS_EXP_CODE_RESULT_REMOVE, .count=1}
-
-/*********************************************************************************
- * LIST MODIFY EXPRESSIONS
- *********************************************************************************/
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 #define _AS_EXP_VAL_RTYPE(__val) {.op=_AS_EXP_CODE_VAL_RTYPE, .v.int_val=__val}
 
@@ -3116,7 +3051,6 @@ as_exp_destroy_base64(char* base64)
 		__rank, __count, \
 		__bin
 
-<<<<<<< HEAD
 //---------------------------------
 // CDT Expressions
 //---------------------------------
@@ -3134,13 +3068,6 @@ as_exp_destroy_base64(char* base64)
  * @ingroup expression
  */
 #define as_exp_select_by_path(__ctx, __rtype, __flags, __bin) \
-=======
-/*********************************************************************************
- * CDT EXPRESSIONS
- *********************************************************************************/
-
-#define as_exp_cdt_select(__ctx, __rtype, __flags, __bin) \
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
 		_AS_EXP_VAL_RTYPE(__rtype), \
 		as_exp_int(_AS_EXP_SYS_CALL_CDT), \
@@ -3149,7 +3076,6 @@ as_exp_destroy_base64(char* base64)
 		as_exp_int(__flags), \
 		__bin
 
-<<<<<<< HEAD
 /**
  * Constructs an apply by path operation.
  *
@@ -3166,9 +3092,6 @@ as_exp_destroy_base64(char* base64)
  * @ingroup expression
  */
 #define as_exp_modify_by_path(__ctx, __rtype, __mod_exp, __flags, __bin) \
-=======
-#define as_exp_cdt_apply(__ctx, __rtype, __mod_exp, __flags, __bin) \
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \
 		_AS_EXP_VAL_RTYPE(__rtype), \
 		as_exp_int(_AS_EXP_SYS_CALL_CDT | _AS_EXP_SYS_FLAG_MODIFY_LOCAL), \
@@ -3178,15 +3101,9 @@ as_exp_destroy_base64(char* base64)
 		{.op=_AS_EXP_CODE_MERGE, .v.expr=__mod_exp}, \
 		__bin
 
-<<<<<<< HEAD
 //---------------------------------
 // Bit Modify Expressions
 //---------------------------------
-=======
-/*********************************************************************************
- * BIT MODIFY EXPRESSIONS
- *********************************************************************************/
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 
 #define _AS_EXP_BIT_MOD() \
 		{.op=_AS_EXP_CODE_CALL, .count=5}, \

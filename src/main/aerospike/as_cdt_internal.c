@@ -19,7 +19,6 @@
 #include <citrusleaf/alloc.h>
 #include <citrusleaf/cf_byte_order.h>
 #include "_bin.h"
-#include <aerospike/as_exp.h>
 
 as_binop*
 as_binop_forappend(as_operations* ops, as_operator operator, const char* name);
@@ -96,11 +95,7 @@ as_cdt_ctx_pack(const as_cdt_ctx* ctx, as_packer* pk)
 			return 0;
 		}
 
-<<<<<<< HEAD
 		if ((item->type & 0x0f) == AS_CDT_CTX_EXP) {
-=======
-		if (item->type == AS_CDT_CTX_EXP) {
->>>>>>> e9128561 (Reference implementation for CDT Select and Apply.)
 			if (as_pack_append(pk,
 					item->val.exp->packed, item->val.exp->packed_sz) != 0) {
 				return 0;
